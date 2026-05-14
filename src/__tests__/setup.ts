@@ -1,8 +1,7 @@
 import { vi } from 'vitest';
 
-// Mock pixi.js entirely since jsdom has no WebGL
 vi.mock('pixi.js', () => {
-  const makeContainer = () => {
+  function makeContainer() {
     const children: unknown[] = [];
     const container = {
       children,
@@ -78,107 +77,78 @@ vi.mock('pixi.js', () => {
       emit: vi.fn(),
     };
     return container;
-  };
-
-  // jsdom doesn't have URL.createObjectURL
-  if (typeof URL.createObjectURL === 'undefined') {
-    Object.defineProperty(URL, 'createObjectURL', {
-      value: vi.fn(() => 'blob:mock'),
-      writable: true,
-    });
-    Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), writable: true });
   }
 
-  const Application = vi.fn().mockImplementation(() => ({
-    init: vi.fn().mockResolvedValue(undefined),
-    stage: {
+  function makeApplication() {
+    return {
+      init: vi.fn().mockResolvedValue(undefined),
+      stage: { ...makeContainer(), sortableChildren: false, hitArea: null },
+      screen: { width: 800, height: 600 },
+      canvas: Object.assign(document.createElement('canvas'), { setAttribute: vi.fn() }),
+      renderer: { extract: { canvas: vi.fn(() => document.createElement('canvas')) } },
+      ticker: { add: vi.fn(), remove: vi.fn() },
+      destroy: vi.fn(),
+    };
+  }
+
+  function makeGraphics() {
+    return {
       ...makeContainer(),
-      sortableChildren: false,
-      hitArea: null,
-    },
-    screen: { width: 800, height: 600 },
-    canvas: Object.assign(document.createElement('canvas'), {
-      setAttribute: vi.fn(),
-    }),
-    renderer: {
-      extract: {
-        canvas: vi.fn(() => document.createElement('canvas')),
-      },
-    },
-    ticker: {
-      add: vi.fn(),
-      remove: vi.fn(),
-    },
-    destroy: vi.fn(),
-  }));
+      rect: vi.fn().mockReturnThis(),
+      roundRect: vi.fn().mockReturnThis(),
+      circle: vi.fn().mockReturnThis(),
+      star: vi.fn().mockReturnThis(),
+      moveTo: vi.fn().mockReturnThis(),
+      lineTo: vi.fn().mockReturnThis(),
+      bezierCurveTo: vi.fn().mockReturnThis(),
+      quadraticCurveTo: vi.fn().mockReturnThis(),
+      closePath: vi.fn().mockReturnThis(),
+      fill: vi.fn().mockReturnThis(),
+      stroke: vi.fn().mockReturnThis(),
+      clear: vi.fn().mockReturnThis(),
+    };
+  }
 
-  const Container = vi.fn().mockImplementation(makeContainer);
+  function makeText() {
+    return {
+      ...makeContainer(),
+      text: '',
+      style: {},
+      getLocalBounds: vi.fn(() => ({ x: 0, y: 0, width: 200, height: 40 })),
+    };
+  }
 
-  const Graphics = vi.fn().mockImplementation(() => ({
-    ...makeContainer(),
-    rect: vi.fn().mockReturnThis(),
-    roundRect: vi.fn().mockReturnThis(),
-    circle: vi.fn().mockReturnThis(),
-    star: vi.fn().mockReturnThis(),
-    moveTo: vi.fn().mockReturnThis(),
-    lineTo: vi.fn().mockReturnThis(),
-    bezierCurveTo: vi.fn().mockReturnThis(),
-    quadraticCurveTo: vi.fn().mockReturnThis(),
-    closePath: vi.fn().mockReturnThis(),
-    fill: vi.fn().mockReturnThis(),
-    stroke: vi.fn().mockReturnThis(),
-    clear: vi.fn().mockReturnThis(),
-  }));
+  function makeSprite() {
+    return {
+      ...makeContainer(),
+      texture: null,
+      width: 100,
+      height: 100,
+      anchor: { set: vi.fn() },
+      getLocalBounds: vi.fn(() => ({ x: 0, y: 0, width: 100, height: 100 })),
+    };
+  }
 
-  const Text = vi.fn().mockImplementation(() => ({
-    ...makeContainer(),
-    text: '',
-    style: {},
-    getLocalBounds: vi.fn(() => ({ x: 0, y: 0, width: 200, height: 40 })),
-  }));
+  function makeTilingSprite({
+    texture,
+    width,
+    height,
+  }: { texture?: unknown; width?: number; height?: number } = {}) {
+    return {
+      ...makeContainer(),
+      texture: texture ?? null,
+      width: width ?? 100,
+      height: height ?? 100,
+      tileScale: { x: 1, y: 1, set: vi.fn() },
+      tilePosition: { x: 0, y: 0 },
+    };
+  }
 
-  const Sprite = vi.fn().mockImplementation(() => ({
-    ...makeContainer(),
-    texture: null,
-    width: 100,
-    height: 100,
-    anchor: { set: vi.fn() },
-    getLocalBounds: vi.fn(() => ({ x: 0, y: 0, width: 100, height: 100 })),
-  }));
+  function makeTextStyle(opts?: Record<string, unknown>) {
+    return { ...opts };
+  }
 
-  const TilingSprite = vi
-    .fn()
-    .mockImplementation(
-      ({
-        texture,
-        width,
-        height,
-      }: {
-        texture?: unknown;
-        width?: number;
-        height?: number;
-      } = {}) => ({
-        ...makeContainer(),
-        texture: texture ?? null,
-        width: width ?? 100,
-        height: height ?? 100,
-        tileScale: { x: 1, y: 1, set: vi.fn((x = 1, _y = x) => {}) },
-        tilePosition: { x: 0, y: 0 },
-      }),
-    );
-
-  const Assets = {
-    load: vi.fn().mockResolvedValue({ width: 100, height: 100 }),
-    unload: vi.fn().mockResolvedValue(undefined),
-  };
-
-  const Texture = {
-    from: vi.fn().mockReturnValue({ width: 100, height: 100, destroy: vi.fn() }),
-  };
-
-  const TextStyle = vi.fn().mockImplementation((opts?: Record<string, unknown>) => ({ ...opts }));
-
-  const makeMeshGeometry = () => {
+  function makeMeshGeometry() {
     const posData = new Float32Array(204); // 51*4
     const uvData = new Float32Array(204);
     const buffer = { data: posData, update: vi.fn() };
@@ -189,16 +159,34 @@ vi.mock('pixi.js', () => {
       getBuffer: vi.fn(() => buffer),
       destroy: vi.fn(),
     };
+  }
+
+  function makeMesh() {
+    return {
+      ...makeContainer(),
+      texture: null,
+      geometry: makeMeshGeometry(),
+      getLocalBounds: vi.fn(() => ({ x: 0, y: 0, width: 200, height: 40 })),
+    };
+  }
+
+  // jsdom doesn't have URL.createObjectURL
+  if (typeof URL.createObjectURL === 'undefined') {
+    Object.defineProperty(URL, 'createObjectURL', {
+      value: vi.fn(() => 'blob:mock'),
+      writable: true,
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), writable: true });
+  }
+
+  const Assets = {
+    load: vi.fn().mockResolvedValue({ width: 100, height: 100 }),
+    unload: vi.fn().mockResolvedValue(undefined),
   };
 
-  const MeshGeometry = vi.fn().mockImplementation(makeMeshGeometry);
-
-  const Mesh = vi.fn().mockImplementation(() => ({
-    ...makeContainer(),
-    texture: null,
-    geometry: makeMeshGeometry(),
-    getLocalBounds: vi.fn(() => ({ x: 0, y: 0, width: 200, height: 40 })),
-  }));
+  const Texture = {
+    from: vi.fn().mockReturnValue({ width: 100, height: 100, destroy: vi.fn() }),
+  };
 
   const RenderTexture = {
     create: vi.fn(() => ({ width: 200, height: 40, destroy: vi.fn() })),
@@ -229,20 +217,20 @@ vi.mock('pixi.js', () => {
   }
 
   return {
-    Application,
-    Container,
-    Graphics,
-    Point,
-    Rectangle,
-    Text,
-    TextStyle,
-    Sprite,
-    TilingSprite,
+    Application: vi.fn().mockImplementation(makeApplication),
+    Container: vi.fn().mockImplementation(makeContainer),
+    Graphics: vi.fn().mockImplementation(makeGraphics),
+    Text: vi.fn().mockImplementation(makeText),
+    TextStyle: vi.fn().mockImplementation(makeTextStyle),
+    Sprite: vi.fn().mockImplementation(makeSprite),
+    TilingSprite: vi.fn().mockImplementation(makeTilingSprite),
+    MeshGeometry: vi.fn().mockImplementation(makeMeshGeometry),
+    Mesh: vi.fn().mockImplementation(makeMesh),
     Assets,
     Texture,
-    MeshGeometry,
-    Mesh,
     RenderTexture,
+    Point,
+    Rectangle,
     EventEmitter: class {
       on = vi.fn();
       off = vi.fn();

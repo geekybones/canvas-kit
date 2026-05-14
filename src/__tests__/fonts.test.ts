@@ -15,11 +15,10 @@ describe('FontManager', () => {
 
   beforeEach(() => {
     const loadedFonts: MockFontFace[] = [];
-    const MockFontFaceImpl = vi.fn((family: string, source: string) => ({
-      family,
-      source,
-      load: vi.fn().mockResolvedValue(undefined),
-    }));
+    function makeFontFace(family: string, source: string) {
+      return { family, source, load: vi.fn().mockResolvedValue(undefined) };
+    }
+    const MockFontFaceImpl = vi.fn(makeFontFace);
 
     Object.defineProperty(globalThis, 'FontFace', {
       value: MockFontFaceImpl,
@@ -61,11 +60,10 @@ describe('FontManager', () => {
           resolveLoad = resolve;
         }),
     );
-    const MockFontFaceImpl = vi.fn((family: string, source: string) => ({
-      family,
-      source,
-      load: loadSpy,
-    }));
+    function makeFontFaceWithSpy(family: string, source: string) {
+      return { family, source, load: loadSpy };
+    }
+    const MockFontFaceImpl = vi.fn(makeFontFaceWithSpy);
     Object.defineProperty(globalThis, 'FontFace', {
       value: MockFontFaceImpl,
       configurable: true,
