@@ -133,7 +133,11 @@ vi.mock('pixi.js', () => {
     texture,
     width,
     height,
-  }: { texture?: unknown; width?: number; height?: number } = {}) {
+  }: {
+    texture?: unknown;
+    width?: number;
+    height?: number;
+  } = {}) {
     return {
       ...makeContainer(),
       texture: texture ?? null,
