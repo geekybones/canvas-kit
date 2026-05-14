@@ -1,0 +1,12 @@
+import '@/elements/Text/Vector/effects/Arch';
+import '@/elements/Text/Vector/effects/Bridge';
+import '@/elements/Text/Vector/effects/Bulge';
+import '@/elements/Text/Vector/effects/Cone';
+import '@/elements/Text/Vector/effects/Curved';
+import '@/elements/Text/Vector/effects/Downward';
+import '@/elements/Text/Vector/effects/Normal';
+import '@/elements/Text/Vector/effects/Pinch';
+import '@/elements/Text/Vector/effects/Perspective';
+import '@/elements/Text/Vector/effects/Pointed';
+import '@/elements/Text/Vector/effects/Upward';
+import '@/elements/Text/Vector/effects/Valley';

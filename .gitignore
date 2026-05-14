@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+playground/node_modules/
+
+# Package manager
+.pnpm-store/
+pnpm-debug.log*
+
+# Build output
+dist/
+playground/dist/
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local tooling and machine files
+.DS_Store
+*.local
+
+# Project-specific generated output
+graphify-out/
