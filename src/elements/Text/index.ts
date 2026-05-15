@@ -51,7 +51,7 @@ export namespace Text {
 export type {
   BaseTextOptions,
   MeshEffectColumn,
-  MeshEffectEntry,
+  MeshEffect,
   MeshEffectFnContext,
   MeshEffectFunction,
   RegisterMeshEffectOptions,

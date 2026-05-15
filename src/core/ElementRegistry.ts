@@ -1,7 +1,11 @@
 import type { BaseElement } from '@/core/BaseElement';
 import type { BaseOptions } from '@/core/BaseOptions';
+import type { CanvasContext } from '@/core/CanvasContext';
 
-export type ElementFactory = (options: BaseOptions) => BaseElement<BaseOptions>;
+export type ElementFactory = (
+  options: BaseOptions,
+  ctx?: CanvasContext,
+) => BaseElement<BaseOptions>;
 
 export class ElementRegistry {
   private readonly elements = new Map<string, BaseElement<BaseOptions>>();
@@ -37,11 +41,11 @@ export class ElementRegistry {
     this.elements.clear();
   }
 
-  createFromOptions(options: BaseOptions): BaseElement<BaseOptions> {
+  createFromOptions(options: BaseOptions, ctx?: CanvasContext): BaseElement<BaseOptions> {
     const factory = this.factories.get(options.type);
     if (!factory) {
       throw new Error(`No factory registered for element type: "${options.type}"`);
     }
-    return factory(options);
+    return factory(options, ctx);
   }
 }

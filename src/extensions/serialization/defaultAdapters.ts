@@ -17,7 +17,7 @@ export function createDefaultSerializationAdapters(ctx: CanvasContext): Serializ
     (type): SerializationAdapter<BaseOptions> => ({
       type,
       serialize: (element) => element.getOptions(),
-      deserialize: (data) => ctx.registry.createFromOptions(data),
+      deserialize: (data) => ctx.registry.createFromOptions(data, ctx),
     }),
   );
 

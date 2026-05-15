@@ -31,7 +31,7 @@ export function resolveSnap(
   y: number,
   opts: ResolveOptions = {},
 ): InternalSnapResult {
-  const { width = 0, height = 0, exclude = [] } = opts;
+  const { width = 0, height = 0, exclude = [], candidateIds } = opts;
   const { threshold } = config;
 
   const xMid = x + width / 2;
@@ -65,7 +65,10 @@ export function resolveSnap(
 
   if (config.objects || config.edges) {
     const excludeSet = new Set(exclude);
-    for (const [id] of registry.getAll()) {
+    // Use the caller-supplied candidate set (built from BoundsIndex) when available
+    // so we skip elements that are guaranteed to be out of snap range.
+    const ids = candidateIds ?? registry.getAll().keys();
+    for (const id of ids) {
       if (excludeSet.has(id)) continue;
       const bounds = getElementBounds(id);
       if (!bounds) continue;

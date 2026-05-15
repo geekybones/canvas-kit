@@ -29,7 +29,7 @@ export class GridManager implements Extension {
 
   init(ctx: CanvasContext): void {
     this.ctx = ctx;
-    this.rebuildGrid();
+    this.createSprite();
     this.accessors = {
       grid: createGridAccessor(() => ctx.getExtension<GridManager>('grid')),
     };
@@ -39,12 +39,6 @@ export class GridManager implements Extension {
     };
     ctx.events.on('camera:changed', onCameraChanged);
     this.cleanupFns.push(() => ctx.events.off('camera:changed', onCameraChanged));
-  }
-
-  private rebuildGrid(): void {
-    this.destroySprite();
-    this.ensureSprite();
-    this.syncVisibility();
   }
 
   private createGridTexture() {
@@ -77,13 +71,13 @@ export class GridManager implements Extension {
     return texture;
   }
 
-  private ensureSprite(): void {
+  private createSprite(): void {
     const pixi = this.ctx.app.getPixiApp();
     const texture = this.createGridTexture();
-
     const { width, height } = pixi.screen;
     this.sprite = new TilingSprite({ texture, width, height });
     this.sprite.zIndex = -1000;
+    this.sprite.visible = this.cfg.visible;
     pixi.stage.addChild(this.sprite);
     const cameraState = this.ctx.getExtension<CameraManager>('camera')?.getState() ?? {
       zoom: 1,
@@ -93,9 +87,17 @@ export class GridManager implements Extension {
     this.syncCameraTransform(cameraState);
   }
 
-  private destroySprite(): void {
-    this.sprite?.destroy(true);
-    this.sprite = undefined;
+  private updateTexture(): void {
+    if (!this.sprite) return;
+    const oldTexture = this.sprite.texture;
+    this.sprite.texture = this.createGridTexture();
+    oldTexture.destroy(true);
+    const cameraState = this.ctx.getExtension<CameraManager>('camera')?.getState() ?? {
+      zoom: 1,
+      x: 0,
+      y: 0,
+    };
+    this.syncCameraTransform(cameraState);
   }
 
   private syncVisibility(): void {
@@ -127,17 +129,18 @@ export class GridManager implements Extension {
 
   setCellSize(size: number): void {
     this.cfg.cellSize = size;
-    this.rebuildGrid();
+    this.updateTexture();
   }
 
   setMajorInterval(interval: number): void {
     this.cfg.majorInterval = interval;
-    this.rebuildGrid();
+    this.updateTexture();
   }
 
   destroy(): void {
     for (const cleanup of this.cleanupFns) cleanup();
     this.cleanupFns = [];
-    this.destroySprite();
+    this.sprite?.destroy(true);
+    this.sprite = undefined;
   }
 }

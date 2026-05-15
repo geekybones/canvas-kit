@@ -1,3 +1,4 @@
+import { Color } from 'pixi.js';
 import { Application } from '@/canvas/Application';
 import {
   addWithHistory,
@@ -41,6 +42,7 @@ import type { SerializationManager } from '@/extensions/serialization/Serializat
 import type { SerializedElement, SerializerAccessor } from '@/extensions/serialization/types';
 import { createSnapAccessor } from '@/extensions/snap/accessor';
 import type { SnapAccessor } from '@/extensions/snap/types';
+import type { ElementPatch } from '@/types/Elements';
 
 export class CanvasKit {
   public readonly ready: Promise<void>;
@@ -60,7 +62,7 @@ export class CanvasKit {
   private readonly app: Application;
   private readonly registry: ElementRegistry;
   private readonly events: CanvasEventBus;
-  private readonly canvasKitOptions: CanvasKitOptions;
+  private canvasKitOptions: CanvasKitOptions;
   private readonly extensions = new Map<string, unknown>();
   private ctx!: CanvasContext;
   private destroyed = false;
@@ -73,9 +75,7 @@ export class CanvasKit {
     this.alignment = createAlignmentAccessor(() => this.getExtension('alignment'));
     this.layer = createLayeringAccessor(() => this.getExtension('layering'));
     this.interaction = createInteractionAccessor({
-      ctx: {
-        getElement: (id) => this.registry.get(id),
-      } as CanvasContext,
+      ctx: { getElement: (id) => this.registry.get(id) },
       getManager: () => this.getExtension('interaction'),
     });
     this.camera = createCameraAccessor(() => this.getExtension('camera'));
@@ -100,7 +100,7 @@ export class CanvasKit {
   private async initExtensions(): Promise<void> {
     loadElements(this.registry);
     this.ctx = this.buildContext();
-    loadExtensions({
+    await loadExtensions({
       ctx: this.ctx,
       options: this.canvasKitOptions,
       extensions: this.extensions,
@@ -236,8 +236,8 @@ export class CanvasKit {
     return removeWithHistory(this.getActionsContext(), id);
   }
 
-  update(id: string, next: Partial<BaseOptions>): Promise<void> {
-    return updateWithHistory(this.getActionsContext(), id, next);
+  update(id: string, next: ElementPatch): Promise<void> {
+    return updateWithHistory(this.getActionsContext(), id, next as Partial<BaseOptions>);
   }
 
   clear(): void {
@@ -256,6 +256,62 @@ export class CanvasKit {
 
   getExtension<T>(name: string): T | undefined {
     return this.extensions.get(name) as T | undefined;
+  }
+
+  /**
+   * Hot-patch supported options without recreating the canvas.
+   * Handles: backgroundColor, grid config, snap config, camera config,
+   * and constrainToCanvas. Extension enable/disable flags still require
+   * a full recreation.
+   */
+  configure(patch: Partial<CanvasKitOptions>): void {
+    if (this.destroyed || !this.ctx) return;
+
+    if (patch.backgroundColor !== undefined) {
+      this.canvasKitOptions.backgroundColor = patch.backgroundColor;
+      const pixi = this.app.getPixiApp();
+      pixi.renderer.background.color = new Color(patch.backgroundColor).toNumber();
+    }
+
+    if (patch.constrainToCanvas !== undefined) {
+      this.canvasKitOptions.constrainToCanvas = patch.constrainToCanvas;
+    }
+
+    if (patch.extensions) {
+      const ext = patch.extensions;
+
+      if (typeof ext.grid === 'object') {
+        const grid = this.extensions.get('grid') as
+          | {
+              setCellSize?: (n: number) => void;
+              setMajorInterval?: (n: number) => void;
+              setVisible?: (v: boolean) => void;
+            }
+          | undefined;
+        if (grid) {
+          if (ext.grid.cellSize !== undefined) grid.setCellSize?.(ext.grid.cellSize);
+          if (ext.grid.majorInterval !== undefined) grid.setMajorInterval?.(ext.grid.majorInterval);
+          if (ext.grid.visible !== undefined) grid.setVisible?.(ext.grid.visible);
+        }
+      }
+
+      if (typeof ext.snap === 'object') {
+        const snap = this.extensions.get('snap') as
+          | { configure?: (p: typeof ext.snap) => void }
+          | undefined;
+        snap?.configure?.(ext.snap);
+      }
+
+      if (typeof ext.camera === 'object') {
+        const camera = this.extensions.get('camera') as
+          | { setState?: (s: Partial<{ zoom: number; x: number; y: number }>) => void }
+          | undefined;
+        const { zoom, ...cameraRest } = ext.camera;
+        if (Object.keys(cameraRest).length === 0 && zoom !== undefined) {
+          camera?.setState?.({ zoom });
+        }
+      }
+    }
   }
 
   on<K extends keyof CanvasEventMap>(

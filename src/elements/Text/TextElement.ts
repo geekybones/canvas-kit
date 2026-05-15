@@ -9,7 +9,6 @@ import {
 } from '@/elements/Text/textRaster';
 import type { TextOptions } from '@/elements/Text/types';
 import type { VectorTextRenderOptions } from '@/elements/Text/Vector';
-import '@/elements/Text/Vector/effects';
 
 export class TextElement extends BaseTextElement<TextOptions> {
   async init(): Promise<void> {

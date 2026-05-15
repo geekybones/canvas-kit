@@ -1,11 +1,10 @@
-import { registerMeshEffect } from '@/elements/Text/Vector/registry';
+import type { MeshEffect } from '@/elements/Text/types';
 
 // Centre stretched taller, edges compressed shorter, with a broad
 // perspective-style taper across the whole word. Uses a pointed
 // profile rather than a rounded bulge so the sides feel more geometric.
-registerMeshEffect(
-  'Perspective',
-  (t, ctx) => {
+export const Perspective: MeshEffect = {
+  fn: (t, ctx) => {
     const i = ctx.intensity / 100;
     const centerWeight = 1 - Math.abs(2 * t - 1);
     const plateauWidth = 0.18;
@@ -20,5 +19,5 @@ registerMeshEffect(
 
     return { dy: 0, scaleY, anchorY: 0.5 };
   },
-  { columns: 180 },
-);
+  columns: 180,
+};

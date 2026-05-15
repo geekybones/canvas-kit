@@ -1,4 +1,6 @@
+import type { Matrix } from 'pixi.js';
 import { Container, Graphics, Rectangle } from 'pixi.js';
+
 import type { CanvasKitOptions } from '@/canvas/CanvasKitOptions';
 import type { BaseElement } from '@/core/BaseElement';
 import type { BaseOptions } from '@/core/BaseOptions';
@@ -105,24 +107,33 @@ export class BoundingBox {
   }
 
   // Single-element path: rotate the bounding box container to match the element.
-  // Temporarily zero rotation to get unrotated bounds, then draw rect in local space.
+  // Uses the world transform matrix to derive screen-space size and rotation without
+  // mutating the display object's rotation property.
   private updateSingle(el: BaseElement<BaseOptions>): void {
     const dObj = el.getDisplayObject();
-    const savedRot = dObj.rotation;
+    const lb = dObj.getLocalBounds();
+    const wt: Matrix = dObj.worldTransform;
 
-    dObj.rotation = 0;
-    const bounds = dObj.getBounds();
-    dObj.rotation = savedRot;
+    // Local centre of the element
+    const lcx = lb.x + lb.width / 2;
+    const lcy = lb.y + lb.height / 2;
 
-    const cx = bounds.x + bounds.width / 2;
-    const cy = bounds.y + bounds.height / 2;
+    // Project local centre to screen space
+    const screenCx = wt.a * lcx + wt.c * lcy + wt.tx;
+    const screenCy = wt.b * lcx + wt.d * lcy + wt.ty;
 
-    this.container.position.set(cx, cy);
-    this.container.rotation = savedRot;
+    // Decompose scale and rotation from the world transform
+    const worldScaleX = Math.sqrt(wt.a * wt.a + wt.b * wt.b);
+    const worldScaleY = Math.sqrt(wt.c * wt.c + wt.d * wt.d);
+    const worldRotation = Math.atan2(wt.b, wt.a);
 
-    const localRect = this.padRect(
-      new Rectangle(-bounds.width / 2, -bounds.height / 2, bounds.width, bounds.height),
-    );
+    const screenW = lb.width * worldScaleX;
+    const screenH = lb.height * worldScaleY;
+
+    this.container.position.set(screenCx, screenCy);
+    this.container.rotation = worldRotation;
+
+    const localRect = this.padRect(new Rectangle(-screenW / 2, -screenH / 2, screenW, screenH));
     this.drawRect(localRect);
     this.positionHandles(localRect);
   }

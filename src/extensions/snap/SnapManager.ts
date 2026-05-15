@@ -81,6 +81,10 @@ export class SnapManager implements Extension {
     this.lines?.hide();
   }
 
+  getThreshold(): number {
+    return this.cfg.threshold;
+  }
+
   // ─── Guide management ─────────────────────────────────────────────────────
 
   addGuide(guide: Guide): void {

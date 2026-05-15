@@ -5,7 +5,10 @@ export type CameraState = { zoom: number; x: number; y: number };
 export type CanvasEventMap = {
   'element:added': [id: string];
   'element:removed': [id: string];
+  /** Committed change — persisted to history, triggers serialization/layer rebuild. */
   'element:updated': [id: string];
+  /** In-flight gesture frame — position/scale/rotation changing but not yet committed. */
+  'element:transforming': [id: string];
   'element:selected': [ids: string | readonly string[] | null];
   'history:changed': [];
   'layer:changed': [];

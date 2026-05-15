@@ -21,5 +21,8 @@ export type ShapeOptions = RectangleOptions | CircleOptions | StarOptions | Line
 
 export type ElementOptions = TextOptions | ImageOptions | ShapeOptions | SVGOptions;
 
-export type ElementPatch = Partial<ElementOptions>;
+// Distributes Partial<> over each union member so element-specific fields are reachable.
+// Partial<TextOptions | ImageOptions> collapses to only common keys; this preserves all.
+type DistributedPartial<T> = T extends unknown ? Partial<T> : never;
+export type ElementPatch = DistributedPartial<ElementOptions>;
 export type ElementType = ElementOptions['type'];

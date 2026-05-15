@@ -1,10 +1,14 @@
 import type { BaseOptions } from '@/core/BaseOptions';
-import type { CanvasContext } from '@/core/CanvasContext';
 import type { InteractionManager } from '@/extensions/interaction/InteractionManager';
 import type { InteractionAccessor } from '@/extensions/interaction/types';
 
+/** Minimal context the interaction accessor actually needs — avoids the `as CanvasContext` cast. */
+export interface InteractionAccessorCtx {
+  getElement(id: string): { getOptions(): BaseOptions } | undefined;
+}
+
 export function createInteractionAccessor(params: {
-  ctx: CanvasContext;
+  ctx: InteractionAccessorCtx;
   getManager: () => InteractionManager | undefined;
 }): InteractionAccessor {
   function select(idOrIds: string | readonly string[] | null): void {

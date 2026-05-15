@@ -2,12 +2,9 @@ import type { CanvasKit, ElementOptions, SerializedElement } from '@geekybones/c
 import type { StoreApi } from 'zustand';
 import type { CanvasStore } from './store';
 
-const LAYERS_EVENTS = [
-  'element:added',
-  'element:removed',
-  'element:updated',
-  'layer:changed',
-] as const;
+// Only structural changes should rebuild the layer list — NOT in-flight gesture frames.
+// element:updated is handled separately so it also triggers a rebuild.
+const LAYERS_EVENTS = ['element:added', 'element:removed', 'layer:changed'] as const;
 
 type CanvasSetState = StoreApi<CanvasStore>['setState'];
 
@@ -54,13 +51,20 @@ function rebuildLayers(canvas: CanvasKit, setState: CanvasSetState): void {
  */
 export function attachCanvasSubscriptions(canvas: CanvasKit, setState: CanvasSetState): () => void {
   const onSelected = () => rebuildSelection(canvas, setState);
-  const onUpdated = (id: string) => rebuildSelection(canvas, setState, id);
+  // element:transforming fires on every gesture frame — only refresh selection (x/y in inspector).
+  const onTransforming = (id: string) => rebuildSelection(canvas, setState, id);
+  // element:updated fires on committed changes — refresh selection AND layer list.
+  const onUpdated = (id: string) => {
+    rebuildSelection(canvas, setState, id);
+    rebuildLayers(canvas, setState);
+  };
   const onHistoryChanged = () => rebuildHistory(canvas, setState);
   const onCameraChanged = () => rebuildCamera(canvas, setState);
   const onLayersChanged = () => rebuildLayers(canvas, setState);
 
   rebuildSelection(canvas, setState);
   canvas.on('element:selected', onSelected);
+  canvas.on('element:transforming', onTransforming);
   canvas.on('element:updated', onUpdated);
 
   rebuildHistory(canvas, setState);
@@ -74,6 +78,7 @@ export function attachCanvasSubscriptions(canvas: CanvasKit, setState: CanvasSet
 
   return () => {
     canvas.off('element:selected', onSelected);
+    canvas.off('element:transforming', onTransforming);
     canvas.off('element:updated', onUpdated);
     canvas.off('history:changed', onHistoryChanged);
     canvas.off('camera:changed', onCameraChanged);

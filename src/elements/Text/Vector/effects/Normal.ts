@@ -1,3 +1,6 @@
-import { registerMeshEffect } from '@/elements/Text/Vector/registry';
+import type { MeshEffect } from '@/elements/Text/types';
 
-registerMeshEffect('Normal', (_t, _ctx) => ({ dy: 0 }));
+export const Normal: MeshEffect = {
+  fn: (_t, _ctx) => ({ dy: 0 }),
+  columns: 100,
+};

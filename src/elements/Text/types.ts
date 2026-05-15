@@ -85,7 +85,7 @@ export interface MeshEffectFnContext {
 
 export type MeshEffectFunction = (t: number, ctx: MeshEffectFnContext) => MeshEffectColumn;
 
-export interface MeshEffectEntry {
+export interface MeshEffect {
   fn: MeshEffectFunction;
   columns: number;
 }

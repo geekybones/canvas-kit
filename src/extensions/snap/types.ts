@@ -43,6 +43,8 @@ export interface ResolveOptions {
   width?: number;
   height?: number;
   exclude?: string[];
+  /** When provided, only these element ids are considered as snap candidates. */
+  candidateIds?: ReadonlySet<string>;
 }
 
 export interface SnapState {

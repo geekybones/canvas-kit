@@ -51,6 +51,7 @@ export class InteractionManager implements Extension {
   private selectedIds = new Set<string>();
   private shortcuts!: KeyboardShortcuts;
   private cleanupFns: Array<() => void> = [];
+  private activeGestureCleanup: (() => void) | undefined;
   private readonly selectableBindings = new Map<string, SelectableBinding>();
   private clipboard: BaseOptions[] = [];
   private selectionStateContext!: InteractionSelectionStateContext;
@@ -150,13 +151,13 @@ export class InteractionManager implements Extension {
         this.attachHandlePointerDown(handle.container, (e) => {
           if (this.isPanBlocked()) return;
           e.stopPropagation();
-          startResize(this.gesturesContext, e, position);
+          this.registerGestureCleanup(startResize(this.gesturesContext, e, position));
         });
       } else if (handler === 'rotate') {
         this.attachHandlePointerDown(handle.container, (e) => {
           if (this.isPanBlocked()) return;
           e.stopPropagation();
-          startRotate(this.gesturesContext, e);
+          this.registerGestureCleanup(startRotate(this.gesturesContext, e));
         });
       } else if (typeof handler === 'function') {
         this.attachHandlePointerDown(handle.container, (e) => {
@@ -182,6 +183,12 @@ export class InteractionManager implements Extension {
   private isPanBlocked(): boolean {
     const camera = this.getCameraManager();
     return Boolean(camera?.isPanModifierActive() || camera?.isPanning());
+  }
+
+  private registerGestureCleanup(cleanup: () => void): void {
+    // Abort any in-flight gesture before starting a new one.
+    this.activeGestureCleanup?.();
+    this.activeGestureCleanup = cleanup;
   }
 
   setOverlayVisible(visible: boolean): void {
@@ -240,6 +247,8 @@ export class InteractionManager implements Extension {
   }
 
   destroy(): void {
+    this.activeGestureCleanup?.();
+    this.activeGestureCleanup = undefined;
     for (const id of this.selectableBindings.keys()) {
       detachSelectableElement(this.getSelectionBindingsContext(), id);
     }
@@ -275,7 +284,9 @@ export class InteractionManager implements Extension {
       selectedIds: this.selectedIds,
       selectableBindings: this.selectableBindings,
       isPanBlocked: () => this.isPanBlocked(),
-      startElementDrag: (e) => startElementDrag(this.gesturesContext, e),
+      startElementDrag: (e) => {
+        this.registerGestureCleanup(startElementDrag(this.gesturesContext, e));
+      },
     };
 
     this.actionsContext = {

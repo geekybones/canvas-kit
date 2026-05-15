@@ -41,6 +41,13 @@ class TestElement {
         width: this.options.width ?? 100,
         height: this.options.height ?? 100,
       })),
+      getLocalBounds: vi.fn(() => ({
+        x: 0,
+        y: 0,
+        width: this.options.width ?? 100,
+        height: this.options.height ?? 100,
+      })),
+      worldTransform: { a: 1, b: 0, c: 0, d: 1, tx: this.options.x ?? 0, ty: this.options.y ?? 0 },
     } as unknown as Container;
     this.displayObject.position.set(options.x ?? 0, options.y ?? 0);
     this.displayObject.rotation = options.rotationDeg ?? 0;

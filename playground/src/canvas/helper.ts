@@ -6,5 +6,5 @@ export function patchSelection(
   patch: ElementPatch,
 ): void {
   if (!selectedId) return;
-  void canvas.update(selectedId, patch as Parameters<typeof canvas.update>[1]);
+  void canvas.update(selectedId, patch);
 }

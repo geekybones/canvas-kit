@@ -1,12 +1,14 @@
 import type {
-  MeshEffectEntry,
+  MeshEffect,
   MeshEffectFunction,
   RegisterMeshEffectOptions,
 } from '@/elements/Text/types';
+import { BUILTIN_EFFECTS } from '@/elements/Text/Vector/effects';
 
 const DEFAULT_MESH_COLUMNS = 100;
 
-const effectRegistry = new Map<string, MeshEffectEntry>();
+// Named import of BUILTIN_EFFECTS ensures this module is included even with sideEffects:false.
+const effectRegistry = new Map<string, MeshEffect>(Object.entries(BUILTIN_EFFECTS));
 
 function normalizeColumns(columns?: number): number {
   if (typeof columns !== 'number' || Number.isNaN(columns)) {
@@ -27,7 +29,7 @@ export function registerMeshEffect(
   });
 }
 
-export function getMeshEffect(name: string): MeshEffectEntry | undefined {
+export function getMeshEffect(name: string): MeshEffect | undefined {
   return effectRegistry.get(name);
 }
 

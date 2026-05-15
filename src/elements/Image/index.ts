@@ -3,7 +3,7 @@ import { ImageElement } from '@/elements/Image/ImageElement';
 import type { ImageOptions } from '@/elements/Image/ImageOptions';
 
 export const IMAGE_FACTORIES: Record<string, ElementFactory> = {
-  image: (opts) => new ImageElement(opts as ImageOptions),
+  image: (opts, ctx) => new ImageElement(opts as ImageOptions, ctx),
 };
 
 function create(options: ImageOptions): ImageElement {
