@@ -82,4 +82,6 @@ export const ICONS = {
   upload: 'M12 3v12M7 10l5 5 5-5M5 21h14',
   line: 'M4 20L20 4',
   trash: 'M3 6h18M8 6V4h8v2M7 6l1 14h8l1-14M10 10v6M14 10v6',
+  keyboard:
+    'M5 6h14a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2zm2 3h1.5m3 0H13m-5 3h1.5m3 0H13m-5 3H16',
 };
