@@ -27,7 +27,7 @@ export function syncSelectableElement(ctx: InteractionSelectionBindingsContext, 
     const native = e.nativeEvent as PointerEvent | null;
     if (native?.ctrlKey || native?.metaKey) {
       toggleSelection(ctx, el.getId());
-    } else {
+    } else if (!ctx.selectedIds.has(el.getId())) {
       selectOnly(ctx, el.getId());
     }
     ctx.startElementDrag(e);

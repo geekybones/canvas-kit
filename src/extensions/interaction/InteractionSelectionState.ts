@@ -1,3 +1,4 @@
+import type { FederatedPointerEvent } from 'pixi.js';
 import type { BaseElement } from '@/core/BaseElement';
 import type { BaseOptions } from '@/core/BaseOptions';
 import type { InteractionSelectionStateContext } from '@/extensions/interaction/types';
@@ -16,6 +17,26 @@ export function onStageClick(ctx: InteractionSelectionStateContext): void {
   if (ctx.isPanBlocked()) return;
   if (ctx.selectedIds.size === 0) return;
   setSelection(ctx, null);
+}
+
+export function onStagePointerDown(
+  ctx: InteractionSelectionStateContext & {
+    startElementDrag(e: FederatedPointerEvent): void;
+  },
+  e: FederatedPointerEvent,
+): void {
+  if (e.button !== 0) return;
+  if (ctx.isPanBlocked()) return;
+
+  if (
+    ctx.selectedIds.size > 0 &&
+    ctx.boundingBox.containsGlobalPoint(e.globalX, e.globalY)
+  ) {
+    ctx.startElementDrag(e);
+    return;
+  }
+
+  onStageClick(ctx);
 }
 
 export function setSelection(

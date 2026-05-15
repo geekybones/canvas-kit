@@ -29,6 +29,7 @@ export class BoundingBox {
   readonly container: Container;
   private readonly rectGraphics: Graphics;
   private readonly handles: ControlHandle[] = [];
+  private selectionRect: Rectangle | null = null;
   private isVisible = true;
   private readonly theme: InteractionTheme;
 
@@ -72,8 +73,21 @@ export class BoundingBox {
     return this.handles;
   }
 
+  containsGlobalPoint(globalX: number, globalY: number): boolean {
+    const rect = this.selectionRect;
+    if (!rect || !this.container.visible) return false;
+    const local = this.container.toLocal({ x: globalX, y: globalY });
+    return (
+      local.x >= rect.x &&
+      local.x <= rect.x + rect.width &&
+      local.y >= rect.y &&
+      local.y <= rect.y + rect.height
+    );
+  }
+
   update(elements: ReadonlyArray<BaseElement<BaseOptions>>): void {
     if (elements.length === 0) {
+      this.selectionRect = null;
       this.container.visible = false;
       return;
     }
@@ -88,6 +102,7 @@ export class BoundingBox {
       this.container.position.set(0, 0);
       this.container.rotation = 0;
       const rect = this.padRect(Transform.getCombinedBoundingRect(elements));
+      this.selectionRect = rect;
       this.drawRect(rect);
       this.positionHandles(rect);
     }
@@ -134,6 +149,7 @@ export class BoundingBox {
     this.container.rotation = worldRotation;
 
     const localRect = this.padRect(new Rectangle(-screenW / 2, -screenH / 2, screenW, screenH));
+    this.selectionRect = localRect;
     this.drawRect(localRect);
     this.positionHandles(localRect);
   }

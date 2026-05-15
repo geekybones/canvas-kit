@@ -205,6 +205,95 @@ describe('InteractionManager', () => {
     expect(displayObject.off).toHaveBeenCalledWith('pointerdown', expect.any(Function));
   });
 
+  it('preserves multi-selection when dragging an already-selected element', () => {
+    const first = makeElement('shape-1', { x: 10 });
+    const second = makeElement('shape-2', { x: 40 });
+    const { ctx } = makeCtx([first, second]);
+    const manager = new InteractionManager();
+    manager.init(ctx);
+
+    manager.select(['shape-1', 'shape-2']);
+
+    const displayObject = first.getDisplayObject() as unknown as {
+      on: ReturnType<typeof vi.fn>;
+    };
+    const pointerDownCall = displayObject.on.mock.calls.find(([event]) => event === 'pointerdown');
+    expect(pointerDownCall).toBeDefined();
+
+    const onPointerDown = pointerDownCall?.[1] as (e: {
+      button: number;
+      stopPropagation: () => void;
+      nativeEvent: PointerEvent | null;
+    }) => void;
+    onPointerDown({
+      button: 0,
+      stopPropagation: vi.fn(),
+      nativeEvent: { ctrlKey: false, metaKey: false } as PointerEvent,
+    });
+
+    expect(manager.getSelectedIds()).toEqual(['shape-1', 'shape-2']);
+  });
+
+  it('selects only the clicked element when it is not already selected', () => {
+    const first = makeElement('shape-1', { x: 10 });
+    const second = makeElement('shape-2', { x: 40 });
+    const { ctx } = makeCtx([first, second]);
+    const manager = new InteractionManager();
+    manager.init(ctx);
+
+    manager.select('shape-1');
+
+    const displayObject = second.getDisplayObject() as unknown as {
+      on: ReturnType<typeof vi.fn>;
+    };
+    const pointerDownCall = displayObject.on.mock.calls.find(([event]) => event === 'pointerdown');
+    expect(pointerDownCall).toBeDefined();
+
+    const onPointerDown = pointerDownCall?.[1] as (e: {
+      button: number;
+      stopPropagation: () => void;
+      nativeEvent: PointerEvent | null;
+    }) => void;
+    onPointerDown({
+      button: 0,
+      stopPropagation: vi.fn(),
+      nativeEvent: { ctrlKey: false, metaKey: false } as PointerEvent,
+    });
+
+    expect(manager.getSelectedIds()).toEqual(['shape-2']);
+  });
+
+  it('starts drag instead of deselecting when clicking inside the selection bounds gap', () => {
+    const first = makeElement('shape-1', { x: 0, y: 0, width: 40, height: 40 });
+    const second = makeElement('shape-2', { x: 0, y: 120, width: 40, height: 40 });
+    const { ctx, stage } = makeCtx([first, second]);
+    const manager = new InteractionManager();
+    manager.init(ctx);
+
+    manager.select(['shape-1', 'shape-2']);
+
+    const boundingBox = (
+      manager as unknown as {
+        boundingBox: {
+          containsGlobalPoint(x: number, y: number): boolean;
+        };
+      }
+    ).boundingBox;
+    expect(boundingBox.containsGlobalPoint(20, 80)).toBe(true);
+
+    const stagePointerDown = vi.mocked(stage.on).mock.calls.find(([event]) => event === 'pointerdown');
+    expect(stagePointerDown).toBeDefined();
+
+    const onStagePointerDown = stagePointerDown?.[1] as (e: {
+      button: number;
+      globalX: number;
+      globalY: number;
+    }) => void;
+    onStagePointerDown({ button: 0, globalX: 20, globalY: 80 });
+
+    expect(manager.getSelectedIds()).toEqual(['shape-1', 'shape-2']);
+  });
+
   it('clears removed elements from the current selection', () => {
     const element = makeElement('shape-1');
     const { ctx } = makeCtx([element]);

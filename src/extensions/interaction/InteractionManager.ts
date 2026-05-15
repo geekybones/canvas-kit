@@ -28,7 +28,7 @@ import {
 import {
   getSelectedElements,
   getSelectedOptions,
-  onStageClick,
+  onStagePointerDown,
   setSelection,
   updateBoundingBox,
 } from '@/extensions/interaction/InteractionSelectionState';
@@ -106,13 +106,19 @@ export class InteractionManager implements Extension {
     this.cleanupFns.push(() => ctx.events.off('element:updated', onElementUpdated));
 
     const stage = ctx.app.getPixiApp().stage;
-    const onStagePointerDown = (e: FederatedPointerEvent) => {
-      if (e.button === 0) {
-        onStageClick(this.getSelectionStateContext());
-      }
+    const handleStagePointerDown = (e: FederatedPointerEvent) => {
+      onStagePointerDown(
+        {
+          ...this.getSelectionStateContext(),
+          startElementDrag: (event) => {
+            this.registerGestureCleanup(startElementDrag(this.gesturesContext, event));
+          },
+        },
+        e,
+      );
     };
-    stage.on('pointerdown', onStagePointerDown);
-    this.cleanupFns.push(() => stage.off('pointerdown', onStagePointerDown));
+    stage.on('pointerdown', handleStagePointerDown);
+    this.cleanupFns.push(() => stage.off('pointerdown', handleStagePointerDown));
 
     this.shortcuts = new KeyboardShortcuts(ctx.app.getCanvas());
     this.shortcuts.register('delete', () => {
