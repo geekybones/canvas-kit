@@ -33,62 +33,14 @@ export function createRasterTextStyle(options: TextStyleOptions): TextStyle {
     align,
     padding: Math.ceil(fontSize * 0.3),
     ...(stroke !== undefined && strokeWidth > 0
-      ? {
-          stroke: withAlpha(stroke, strokeAlpha),
-          strokeThickness: strokeWidth,
-        }
+      ? { stroke: { color: stroke, alpha: strokeAlpha, width: strokeWidth } }
       : {}),
     ...(lineHeight !== undefined ? { lineHeight } : {}),
   });
 }
 
-function withAlpha(color: number | string, alpha: number): string {
-  const normalizedAlpha = Math.max(0, Math.min(1, alpha));
-
-  if (typeof color === 'number') {
-    const hex = `#${color.toString(16).padStart(6, '0').slice(-6)}`;
-    return hexToRgba(hex, normalizedAlpha);
-  }
-
-  return hexToRgba(color, normalizedAlpha);
-}
-
-function hexToRgba(value: string, alpha: number): string {
-  let normalized = value.trim();
-
-  if (normalized.startsWith('#')) {
-    normalized = normalized.slice(1);
-  }
-
-  if (normalized.length === 3) {
-    normalized = normalized
-      .split('')
-      .map((char) => char + char)
-      .join('');
-  }
-
-  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
-    return `rgba(0, 0, 0, ${alpha})`;
-  }
-
-  const int = Number.parseInt(normalized, 16);
-  const r = (int >> 16) & 0xff;
-  const g = (int >> 8) & 0xff;
-  const b = int & 0xff;
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 export function measureRasterTextLayout(options: TextStyleOptions): CanvasTextMetrics {
   return CanvasTextMetrics.measureText(options.text || ' ', createRasterTextStyle(options));
-}
-
-export function measureRasterTextWidth(options: TextStyleOptions): number {
-  const metrics = measureRasterTextLayout({
-    ...options,
-    lineHeight: undefined,
-  });
-  return Math.max(metrics.width, 1);
 }
 
 export function updateRasterTextResolution(

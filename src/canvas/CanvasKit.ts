@@ -16,6 +16,7 @@ import type { CanvasContext } from '@/core/CanvasContext';
 import { constrainElementToCanvas, isCanvasConstraintEnabled } from '@/core/canvasBounds';
 import { ElementRegistry } from '@/core/ElementRegistry';
 import { CanvasEventBus, type CanvasEventMap } from '@/core/Events';
+import { TextElement } from '@/elements/Text/TextElement';
 import { createAlignmentAccessor } from '@/extensions/alignment/accessor';
 import type { AlignmentAccessor } from '@/extensions/alignment/types';
 import { createCameraAccessor } from '@/extensions/camera/accessor';
@@ -43,7 +44,6 @@ import type { SerializationManager } from '@/extensions/serialization/Serializat
 import type { SerializedElement, SerializerAccessor } from '@/extensions/serialization/types';
 import { createSnapAccessor } from '@/extensions/snap/accessor';
 import type { SnapAccessor } from '@/extensions/snap/types';
-import { TextElement } from '@/elements/Text/TextElement';
 import type { ElementPatch } from '@/types/Elements';
 
 export class CanvasKit {
@@ -159,7 +159,10 @@ export class CanvasKit {
       if (fontsExt) {
         const opts = el.getOptions() as { fontFamily?: string; fontUrl?: string };
         const patch = next as { fontFamily?: string; fontUrl?: string };
-        await fontsExt.preloadFont(patch.fontFamily ?? opts.fontFamily, patch.fontUrl ?? opts.fontUrl);
+        await fontsExt.preloadFont(
+          patch.fontFamily ?? opts.fontFamily,
+          patch.fontUrl ?? opts.fontUrl,
+        );
       }
     }
     await el.update(next);
