@@ -1,4 +1,5 @@
 import { patchSelection, useCanvas, useCanvasStore } from '@/canvas';
+import { FontSelectField } from '@/components/ui/FontSelectField';
 import {
   AlignButtons,
   ColorField,
@@ -10,6 +11,7 @@ import {
 import { Icon } from '@/components/ui/Icon';
 import { ICONS } from '@/icons/icons';
 import { isText, TEXT_EFFECTS } from '@/utils/elements';
+import { FONTS, getWoffUrl } from '@/utils/fonts';
 
 export function TextInspector() {
   const canvas = useCanvas();
@@ -50,6 +52,16 @@ export function TextInspector() {
           ) : null
         }
       >
+        <FontSelectField
+          value={selected.fontFamily}
+          fonts={FONTS}
+          onChange={(font) => {
+            patchSelection(canvas, selectedId, {
+              fontFamily: font?.family,
+              fontUrl: font ? getWoffUrl(font) : undefined,
+            });
+          }}
+        />
         <div className="triple-row">
           <NumberField
             label="Size"

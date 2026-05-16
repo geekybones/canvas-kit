@@ -38,7 +38,8 @@
     "fontWeight": "bold",
     "fill": "#0F172A",
     "lineHeight": 1.18,
-    "zIndex": 7
+    "zIndex": 7,
+    "fontFamily": "Dancing Script"
   },
   {
     "id": "layer-info-card",

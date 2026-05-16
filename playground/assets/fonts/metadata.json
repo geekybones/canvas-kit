@@ -1,0 +1,340 @@
+{
+  "fonts": [
+    {
+      "id": "abeezee",
+      "family": "ABeeZee",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "abeezee/abeezee-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "abeezee/abeezee-400-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "barlow",
+      "family": "Barlow",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "barlow/barlow-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "barlow/barlow-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "barlow/barlow-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "barlow/barlow-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "inter",
+      "family": "Inter",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "inter/inter-400-normal.woff"
+        },
+        "700-normal": {
+          "woff": "inter/inter-700-normal.woff"
+        }
+      }
+    },
+    {
+      "id": "roboto",
+      "family": "Roboto",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "roboto/roboto-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "roboto/roboto-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "roboto/roboto-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "roboto/roboto-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "open-sans",
+      "family": "Open Sans",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "open-sans/open-sans-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "open-sans/open-sans-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "open-sans/open-sans-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "open-sans/open-sans-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "lato",
+      "family": "Lato",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "lato/lato-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "lato/lato-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "lato/lato-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "lato/lato-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "montserrat",
+      "family": "Montserrat",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "montserrat/montserrat-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "montserrat/montserrat-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "montserrat/montserrat-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "montserrat/montserrat-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "poppins",
+      "family": "Poppins",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "poppins/poppins-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "poppins/poppins-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "poppins/poppins-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "poppins/poppins-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "raleway",
+      "family": "Raleway",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "raleway/raleway-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "raleway/raleway-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "raleway/raleway-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "raleway/raleway-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "oswald",
+      "family": "Oswald",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "oswald/oswald-400-normal.woff"
+        },
+        "700-normal": {
+          "woff": "oswald/oswald-700-normal.woff"
+        }
+      }
+    },
+    {
+      "id": "nunito",
+      "family": "Nunito",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "nunito/nunito-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "nunito/nunito-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "nunito/nunito-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "nunito/nunito-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "dm-sans",
+      "family": "DM Sans",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "dm-sans/dm-sans-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "dm-sans/dm-sans-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "dm-sans/dm-sans-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "dm-sans/dm-sans-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "josefin-sans",
+      "family": "Josefin Sans",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "josefin-sans/josefin-sans-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "josefin-sans/josefin-sans-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "josefin-sans/josefin-sans-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "josefin-sans/josefin-sans-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "playfair-display",
+      "family": "Playfair Display",
+      "category": "serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "playfair-display/playfair-display-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "playfair-display/playfair-display-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "playfair-display/playfair-display-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "playfair-display/playfair-display-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "merriweather",
+      "family": "Merriweather",
+      "category": "serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "merriweather/merriweather-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "merriweather/merriweather-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "merriweather/merriweather-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "merriweather/merriweather-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "source-serif-4",
+      "family": "Source Serif 4",
+      "category": "serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "source-serif-4/source-serif-4-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "source-serif-4/source-serif-4-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "source-serif-4/source-serif-4-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "source-serif-4/source-serif-4-700-italic.woff"
+        }
+      }
+    },
+    {
+      "id": "dancing-script",
+      "family": "Dancing Script",
+      "category": "handwriting",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "dancing-script/dancing-script-400-normal.woff"
+        },
+        "700-normal": {
+          "woff": "dancing-script/dancing-script-700-normal.woff"
+        }
+      }
+    },
+    {
+      "id": "ubuntu",
+      "family": "Ubuntu",
+      "category": "sans-serif",
+      "defaultWeight": 400,
+      "files": {
+        "400-normal": {
+          "woff": "ubuntu/ubuntu-400-normal.woff"
+        },
+        "400-italic": {
+          "woff": "ubuntu/ubuntu-400-italic.woff"
+        },
+        "700-normal": {
+          "woff": "ubuntu/ubuntu-700-normal.woff"
+        },
+        "700-italic": {
+          "woff": "ubuntu/ubuntu-700-italic.woff"
+        }
+      }
+    }
+  ]
+}

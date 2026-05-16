@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@geekybones/canvas-kit": "workspace:*",
+    "@tanstack/react-virtual": "^3.13.24",
     "pixi.js": "^8.18.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

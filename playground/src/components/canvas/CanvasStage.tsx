@@ -3,6 +3,7 @@ import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 're
 import { useCanvasStore } from '@/canvas';
 import mockScene from '@/data/mock.json';
 import { parseJsonColors } from '@/utils/colors';
+import { FONTS, preloadFont } from '@/utils/fonts';
 
 const SCENE_SEED_LAYER_EVENTS = [
   'element:added',
@@ -68,6 +69,14 @@ export function CanvasStage({ onReady }: CanvasStageProps) {
 
     void canvas.ready.then(async () => {
       if (disposed) return;
+
+      const fontPreloads = sceneSeedRef.current.flatMap((el) => {
+        if (el.type !== 'text' || typeof el.fontFamily !== 'string') return [];
+        const font = FONTS.find((f) => f.family === el.fontFamily);
+        return font ? [preloadFont(font)] : [];
+      });
+      await Promise.all(fontPreloads);
+
       if (canvas.serializer) {
         await canvas.serializer.append(sceneSeedRef.current);
       }

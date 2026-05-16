@@ -1170,6 +1170,94 @@ textarea {
   text-transform: uppercase;
 }
 
+.font-sel-trigger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 8px;
+  height: 26px;
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  text-align: left;
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+}
+
+.font-sel-trigger:hover {
+  background: #f3f4f6;
+}
+
+.font-sel-trigger:focus-visible {
+  outline: none;
+  border-color: var(--selection);
+  box-shadow: 0 0 0 2px var(--selection-soft);
+  background: #fff;
+}
+
+.font-sel-val {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.font-sel-menu {
+  position: fixed;
+  z-index: 1000;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  padding: 4px;
+}
+
+.font-sel-scroll {
+  overflow-y: auto;
+  max-height: 240px;
+}
+
+.font-sel-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  left: 0;
+  right: 0;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.font-sel-loading {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-4);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.font-sel-opt:hover {
+  background: var(--panel-2);
+}
+
+.font-sel-opt.on {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .muted-row {
   grid-column: span 2;
   font-size: var(--fs-sm);
