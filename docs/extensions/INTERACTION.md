@@ -20,6 +20,13 @@ extensions: {
         size: 18,                 // handle square size
         color: '#000918',         // handle fill color
       },
+      marquee: {
+        fillColor: 0x4285f4,      // selection rectangle fill color
+        fillAlpha: 0.1,           // fill opacity
+        strokeColor: 0x4285f4,    // selection rectangle border color
+        strokeWidth: 1,           // border width
+        strokeAlpha: 0.8,         // border opacity
+      },
     },
     controls: {
       // Override or add handles at specific positions
@@ -65,6 +72,7 @@ await canvas.interaction.duplicate();
 |---|---|
 | Click element | Select that element |
 | Click canvas background | Clear selection |
+| Drag canvas background | Marquee selection — draws a rectangle and selects all intersecting elements on release |
 | Drag element | Move (recorded as `'move'` in history) |
 | Drag resize handle | Resize (recorded as `'resize'`) |
 | Drag rotate handle | Rotate (recorded as `'rotate'`) |
@@ -90,6 +98,16 @@ await canvas.interaction.duplicate();
 |---|---|---|
 | `size` | `number?` | Handle square size in pixels |
 | `color` | `number \| string?` | Handle fill color |
+
+### `theme.marquee`
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `fillColor` | `number \| string?` | `0x4285f4` | Selection rectangle fill color |
+| `fillAlpha` | `number?` | `0.1` | Fill opacity (0–1) |
+| `strokeColor` | `number \| string?` | `0x4285f4` | Selection rectangle border color |
+| `strokeWidth` | `number?` | `1` | Border width in pixels |
+| `strokeAlpha` | `number?` | `0.8` | Border opacity (0–1) |
 
 ## Custom handles (`controls`)
 

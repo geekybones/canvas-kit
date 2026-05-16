@@ -281,7 +281,9 @@ describe('InteractionManager', () => {
     ).boundingBox;
     expect(boundingBox.containsGlobalPoint(20, 80)).toBe(true);
 
-    const stagePointerDown = vi.mocked(stage.on).mock.calls.find(([event]) => event === 'pointerdown');
+    const stagePointerDown = vi
+      .mocked(stage.on)
+      .mock.calls.find(([event]) => event === 'pointerdown');
     expect(stagePointerDown).toBeDefined();
 
     const onStagePointerDown = stagePointerDown?.[1] as (e: {

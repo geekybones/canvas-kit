@@ -26,9 +26,17 @@ export const DEFAULT_HISTORY_CONFIG: HistoryConfig = {
 };
 
 export const DEFAULT_INTERACTION_CONFIG: InteractionConfig = {
+  marquee: true,
   theme: {
     boundingBox: { lineColor: '#000918', lineThickness: 1.5 },
     handle: { size: 18, color: '#000918' },
+    marquee: {
+      fillColor: '#4285f4',
+      fillAlpha: 0.1,
+      strokeColor: '#4285f4',
+      strokeWidth: 1,
+      strokeAlpha: 0.8,
+    },
   },
 };
 

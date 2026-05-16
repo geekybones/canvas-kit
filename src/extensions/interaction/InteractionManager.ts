@@ -32,11 +32,13 @@ import {
   setSelection,
   updateBoundingBox,
 } from '@/extensions/interaction/InteractionSelectionState';
+import { startMarqueeSelection } from '@/extensions/interaction/MarqueeGesture';
 import type {
   InteractionActionsContext,
   InteractionGesturesContext,
   InteractionSelectionBindingsContext,
   InteractionSelectionStateContext,
+  InteractionTheme,
   SelectableBinding,
   StartState,
 } from '@/extensions/interaction/types';
@@ -112,6 +114,24 @@ export class InteractionManager implements Extension {
           ...this.getSelectionStateContext(),
           startElementDrag: (event) => {
             this.registerGestureCleanup(startElementDrag(this.gesturesContext, event));
+          },
+          startMarqueeSelection: (event) => {
+            if (!this.isMarqueeEnabled()) {
+              setSelection(this.getSelectionStateContext(), null);
+              return;
+            }
+            this.registerGestureCleanup(
+              startMarqueeSelection(
+                {
+                  ctx: this.ctx,
+                  overlayLayer: this.overlayLayer,
+                  getCameraManager: () => this.getCameraManager(),
+                  setSelection: (ids) => setSelection(this.getSelectionStateContext(), ids),
+                  theme: this.getMarqueeTheme(),
+                },
+                event,
+              ),
+            );
           },
         },
         e,
@@ -238,6 +258,20 @@ export class InteractionManager implements Extension {
 
   private getCameraManager(): CameraManager | undefined {
     return this.ctx.getExtension<CameraManager>('camera');
+  }
+
+  private getInteractionConfig() {
+    return typeof this.ctx.options.extensions?.interaction === 'object'
+      ? this.ctx.options.extensions.interaction
+      : undefined;
+  }
+
+  private isMarqueeEnabled(): boolean {
+    return this.getInteractionConfig()?.marquee !== false;
+  }
+
+  private getMarqueeTheme(): InteractionTheme['marquee'] {
+    return this.getInteractionConfig()?.theme?.marquee;
   }
 
   private getSnapManager(): SnapManager | undefined {

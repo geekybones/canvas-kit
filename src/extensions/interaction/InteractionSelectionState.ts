@@ -13,30 +13,22 @@ export function toggleSelection(ctx: InteractionSelectionStateContext, id: strin
   setSelection(ctx, [...ctx.selectedIds]);
 }
 
-export function onStageClick(ctx: InteractionSelectionStateContext): void {
-  if (ctx.isPanBlocked()) return;
-  if (ctx.selectedIds.size === 0) return;
-  setSelection(ctx, null);
-}
-
 export function onStagePointerDown(
   ctx: InteractionSelectionStateContext & {
     startElementDrag(e: FederatedPointerEvent): void;
+    startMarqueeSelection(e: FederatedPointerEvent): void;
   },
   e: FederatedPointerEvent,
 ): void {
   if (e.button !== 0) return;
   if (ctx.isPanBlocked()) return;
 
-  if (
-    ctx.selectedIds.size > 0 &&
-    ctx.boundingBox.containsGlobalPoint(e.globalX, e.globalY)
-  ) {
+  if (ctx.selectedIds.size > 0 && ctx.boundingBox.containsGlobalPoint(e.globalX, e.globalY)) {
     ctx.startElementDrag(e);
     return;
   }
 
-  onStageClick(ctx);
+  ctx.startMarqueeSelection(e);
 }
 
 export function setSelection(

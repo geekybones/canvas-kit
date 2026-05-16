@@ -89,14 +89,35 @@ export function CanvasKitInspector() {
     );
   };
 
+  const setInteraction = (patch: Partial<InteractionConfig>) => {
+    setDraft((current) =>
+      mergeExtensions(current, {
+        interaction: { ...interactionConfig, ...patch },
+      }),
+    );
+  };
+
   const setInteractionTheme = (patch: Partial<NonNullable<InteractionConfig['theme']>>) => {
+    setDraft((current) =>
+      mergeExtensions(current, {
+        interaction: {
+          ...interactionConfig,
+          theme: { ...(interactionConfig.theme ?? {}), ...patch },
+        },
+      }),
+    );
+  };
+
+  const setMarqueeTheme = (
+    patch: Partial<NonNullable<NonNullable<InteractionConfig['theme']>['marquee']>>,
+  ) => {
     setDraft((current) =>
       mergeExtensions(current, {
         interaction: {
           ...interactionConfig,
           theme: {
             ...(interactionConfig.theme ?? {}),
-            ...patch,
+            marquee: { ...(interactionConfig.theme?.marquee ?? {}), ...patch },
           },
         },
       }),
@@ -342,6 +363,48 @@ export function CanvasKitInspector() {
                 min={8}
               />
             </div>
+            <ToggleField
+              label="Marquee"
+              checked={interactionConfig.marquee !== false}
+              onChange={(checked) => setInteraction({ marquee: checked })}
+            />
+            {interactionConfig.marquee !== false ? (
+              <>
+                <div className="pair-row">
+                  <StringColorField
+                    label="Fill"
+                    value={interactionConfig.theme?.marquee?.fillColor?.toString() ?? '#4285f4'}
+                    onChange={(value) => setMarqueeTheme({ fillColor: value })}
+                  />
+                  <NumberField
+                    label="Fill %"
+                    value={Math.round((interactionConfig.theme?.marquee?.fillAlpha ?? 0.1) * 100)}
+                    onChange={(value) => setMarqueeTheme({ fillAlpha: value / 100 })}
+                    min={0}
+                  />
+                </div>
+                <div className="pair-row">
+                  <StringColorField
+                    label="Stroke"
+                    value={interactionConfig.theme?.marquee?.strokeColor?.toString() ?? '#4285f4'}
+                    onChange={(value) => setMarqueeTheme({ strokeColor: value })}
+                  />
+                  <NumberField
+                    label="Stroke W"
+                    value={interactionConfig.theme?.marquee?.strokeWidth ?? 1}
+                    onChange={(value) => setMarqueeTheme({ strokeWidth: value })}
+                    min={0.5}
+                    step={0.5}
+                  />
+                </div>
+                <NumberField
+                  label="Stroke %"
+                  value={Math.round((interactionConfig.theme?.marquee?.strokeAlpha ?? 0.8) * 100)}
+                  onChange={(value) => setMarqueeTheme({ strokeAlpha: value / 100 })}
+                  min={0}
+                />
+              </>
+            ) : null}
           </>
         ) : null}
       </Section>

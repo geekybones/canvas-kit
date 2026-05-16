@@ -35,11 +35,19 @@ export interface InteractionTheme {
     size?: number;
     color?: number | string;
   };
+  marquee?: {
+    fillColor?: number | string;
+    fillAlpha?: number;
+    strokeColor?: number | string;
+    strokeWidth?: number;
+    strokeAlpha?: number;
+  };
 }
 
 export interface InteractionConfig {
   controls?: Partial<Record<HandlePosition, ControlConfig>>;
   theme?: InteractionTheme;
+  marquee?: boolean;
 }
 
 export type InteractionAccessor = {

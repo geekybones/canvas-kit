@@ -232,7 +232,7 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 4px;
   background: var(--panel-2);
-  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
   font-size: var(--fs-xs);
   line-height: 1.4;
 }

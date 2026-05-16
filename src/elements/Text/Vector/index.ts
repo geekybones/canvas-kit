@@ -1,6 +1,6 @@
 export type {
-  MeshEffectColumn,
   MeshEffect,
+  MeshEffectColumn,
   MeshEffectFnContext,
   MeshEffectFunction,
   RegisterMeshEffectOptions,
