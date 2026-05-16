@@ -31,6 +31,24 @@ canvas.fonts.getLoadedFonts();          // readonly string[]
 - Calls are **deduplicated** — loading the same `family + url` pair more than once does nothing after the first call.
 - Loading the same family from a **different URL** throws with `'already loaded'`.
 - The `FontFace.load()` call is awaited, so `canvas.fonts.load()` resolves only once the font is ready to use.
+- Font loading is **automatic on update** — calling `canvas.update(id, { fontFamily, fontUrl })` preloads the font before applying it, so you never need to call `canvas.fonts.load()` manually before an update.
+
+## Shared `fontManager` instance
+
+A shared `FontManager` instance is exported from the package. It is the same instance used internally by `CanvasKit`, so fonts loaded through it are immediately available to any canvas on the page:
+
+```ts
+import { fontManager } from '@geekybones/canvas-kit';
+
+// Preload a font by family + URL
+await fontManager.preloadFont('Manrope', '/fonts/Manrope-Regular.ttf');
+
+// Same deduplication guarantees as canvas.fonts.load()
+fontManager.isLoaded('Manrope');        // boolean
+fontManager.getLoadedFonts();           // readonly string[]
+```
+
+Use `fontManager` directly when you need to preload fonts outside of a `CanvasKit` instance — for example, in a font picker UI before the user applies a font.
 
 ## Standard vs vector text
 

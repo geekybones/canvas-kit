@@ -12,7 +12,8 @@ export interface HandlePoint {
 
 function getBoundingRect(container: Container): Rectangle {
   container.getLocalBounds();
-  return container.getBounds().rectangle;
+  const b = container.getBounds();
+  return new Rectangle(b.x, b.y, b.width, b.height);
 }
 
 function getCombinedBoundingRect(elements: ReadonlyArray<BaseElement<BaseOptions>>): Rectangle {
