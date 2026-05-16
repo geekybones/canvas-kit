@@ -1,9 +1,9 @@
-import { CanvasKit, type SerializedElement } from '@geekybones/canvas-kit';
+import { CanvasKit, fontManager, type SerializedElement } from '@geekybones/canvas-kit';
 import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useCanvasStore } from '@/canvas';
 import mockScene from '@/data/mock.json';
 import { parseJsonColors } from '@/utils/colors';
-import { FONTS, preloadFont } from '@/utils/fonts';
+import { resolveFontUrlFromFamily } from '@/utils/fonts';
 
 const SCENE_SEED_LAYER_EVENTS = [
   'element:added',
@@ -72,8 +72,9 @@ export function CanvasStage({ onReady }: CanvasStageProps) {
 
       const fontPreloads = sceneSeedRef.current.flatMap((el) => {
         if (el.type !== 'text' || typeof el.fontFamily !== 'string') return [];
-        const font = FONTS.find((f) => f.family === el.fontFamily);
-        return font ? [preloadFont(font)] : [];
+        const url = resolveFontUrlFromFamily(el.fontFamily);
+        if (!url || fontManager.isLoaded(el.fontFamily)) return [];
+        return [fontManager.load(el.fontFamily, url)];
       });
       await Promise.all(fontPreloads);
 

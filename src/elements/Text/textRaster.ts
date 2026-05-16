@@ -31,6 +31,7 @@ export function createRasterTextStyle(options: TextStyleOptions): TextStyle {
     fontStyle: fontStyle as 'normal' | 'italic' | 'oblique',
     letterSpacing,
     align,
+    padding: Math.ceil(fontSize * 0.3),
     ...(stroke !== undefined && strokeWidth > 0
       ? {
           stroke: withAlpha(stroke, strokeAlpha),

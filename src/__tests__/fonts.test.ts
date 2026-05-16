@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createFontsAccessor } from '@/extensions/fonts/accessor';
-import { FontManager } from '@/extensions/fonts/FontManager';
+import { FontManager, fontManager } from '@/extensions/fonts/FontManager';
 
 type MockFontFace = {
   family: string;
@@ -89,6 +89,30 @@ describe('FontManager', () => {
     await expect(manager.load('Manrope', '/fonts/manrope-alt.ttf')).rejects.toThrow(
       'already loaded',
     );
+  });
+
+  it('preloadFont loads a font given family and url', async () => {
+    const manager = new FontManager();
+
+    await manager.preloadFont('Manrope', '/fonts/manrope.ttf');
+
+    expect(manager.isLoaded('Manrope')).toBe(true);
+  });
+
+  it('preloadFont no-ops when family or url is missing', async () => {
+    const manager = new FontManager();
+    const loadSpy = vi.spyOn(manager, 'load');
+
+    await manager.preloadFont(undefined, '/fonts/manrope.ttf');
+    await manager.preloadFont('Manrope', undefined);
+
+    expect(loadSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('fontManager', () => {
+  it('is the default shared FontManager instance', () => {
+    expect(fontManager).toBeInstanceOf(FontManager);
   });
 });
 

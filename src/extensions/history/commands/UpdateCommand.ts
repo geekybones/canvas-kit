@@ -1,5 +1,8 @@
+import type { BaseElement } from '@/core/BaseElement';
 import type { BaseOptions } from '@/core/BaseOptions';
 import type { CanvasContext } from '@/core/CanvasContext';
+import { TextElement } from '@/elements/Text/TextElement';
+import type { FontManager } from '@/extensions/fonts/FontManager';
 import type { Command } from '@/extensions/history/commands/Command';
 import type { HistoryTrack } from '@/extensions/history/types';
 
@@ -44,6 +47,7 @@ export class UpdateCommand implements Command {
   async execute(): Promise<void> {
     const el = this.ctx.registry.get(this.id);
     if (el) {
+      await this.preloadFontIfNeeded(el, this.after);
       await el.update(this.after);
       this.ctx.events.emit('element:updated', this.id);
     }
@@ -52,9 +56,23 @@ export class UpdateCommand implements Command {
   async undo(): Promise<void> {
     const el = this.ctx.registry.get(this.id);
     if (el) {
+      await this.preloadFontIfNeeded(el, this.before);
       await el.update(this.before);
       this.ctx.events.emit('element:updated', this.id);
     }
+  }
+
+  private async preloadFontIfNeeded(
+    el: BaseElement<BaseOptions> | undefined,
+    patch: Partial<BaseOptions>,
+  ): Promise<void> {
+    if (!(el instanceof TextElement)) return;
+    if (!('fontFamily' in patch) && !('fontUrl' in patch)) return;
+    const fontsExt = this.ctx.getExtension<FontManager>('fonts');
+    if (!fontsExt) return;
+    const opts = el.getOptions() as { fontFamily?: string; fontUrl?: string };
+    const p = patch as { fontFamily?: string; fontUrl?: string };
+    await fontsExt.preloadFont(p.fontFamily ?? opts.fontFamily, p.fontUrl ?? opts.fontUrl);
   }
 
   private static buildPatches(

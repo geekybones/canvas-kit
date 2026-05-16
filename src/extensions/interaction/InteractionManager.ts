@@ -54,6 +54,7 @@ export class InteractionManager implements Extension {
   private shortcuts!: KeyboardShortcuts;
   private cleanupFns: Array<() => void> = [];
   private activeGestureCleanup: (() => void) | undefined;
+  private boundingBoxRaf: number | undefined;
   private readonly selectableBindings = new Map<string, SelectableBinding>();
   private clipboard: BaseOptions[] = [];
   private selectionStateContext!: InteractionSelectionStateContext;
@@ -101,7 +102,7 @@ export class InteractionManager implements Extension {
     const onElementUpdated = (id: string) => {
       syncSelectableElement(this.getSelectionBindingsContext(), id);
       if (this.selectedIds.has(id)) {
-        updateBoundingBox(this.getSelectionStateContext());
+        this.refreshBoundingBoxForSelection();
       }
     };
     ctx.events.on('element:updated', onElementUpdated);
@@ -286,7 +287,21 @@ export class InteractionManager implements Extension {
     recordGroupUpdate(this.actionsContext, elements, beforeStates, kind);
   }
 
+  private refreshBoundingBoxForSelection(): void {
+    if (this.boundingBoxRaf !== undefined) {
+      cancelAnimationFrame(this.boundingBoxRaf);
+    }
+    this.boundingBoxRaf = requestAnimationFrame(() => {
+      this.boundingBoxRaf = undefined;
+      updateBoundingBox(this.getSelectionStateContext());
+    });
+  }
+
   destroy(): void {
+    if (this.boundingBoxRaf !== undefined) {
+      cancelAnimationFrame(this.boundingBoxRaf);
+      this.boundingBoxRaf = undefined;
+    }
     this.activeGestureCleanup?.();
     this.activeGestureCleanup = undefined;
     for (const id of this.selectableBindings.keys()) {

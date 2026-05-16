@@ -27,6 +27,7 @@ export type {
   ExportOptions,
   ExportQuality,
 } from '@/extensions/export/types';
+export { fontManager } from '@/extensions/fonts';
 export type { FontsAccessor } from '@/extensions/fonts/types';
 export type {
   GridAccessor,

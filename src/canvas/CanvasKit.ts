@@ -25,6 +25,7 @@ import type { ContextMenuAccessor } from '@/extensions/contextMenu/types';
 import { createExportAccessor } from '@/extensions/export/accessor';
 import type { ExportAccessor } from '@/extensions/export/types';
 import { createFontsAccessor } from '@/extensions/fonts/accessor';
+import type { FontManager } from '@/extensions/fonts/FontManager';
 import type { FontsAccessor } from '@/extensions/fonts/types';
 import { createGridAccessor } from '@/extensions/grid/accessor';
 import type { GridAccessor } from '@/extensions/grid/types';
@@ -42,6 +43,7 @@ import type { SerializationManager } from '@/extensions/serialization/Serializat
 import type { SerializedElement, SerializerAccessor } from '@/extensions/serialization/types';
 import { createSnapAccessor } from '@/extensions/snap/accessor';
 import type { SnapAccessor } from '@/extensions/snap/types';
+import { TextElement } from '@/elements/Text/TextElement';
 import type { ElementPatch } from '@/types/Elements';
 
 export class CanvasKit {
@@ -152,6 +154,14 @@ export class CanvasKit {
     el: BaseElement<BaseOptions>,
     next: Partial<BaseOptions>,
   ): Promise<void> {
+    if (el instanceof TextElement && ('fontFamily' in next || 'fontUrl' in next)) {
+      const fontsExt = this.ctx.getExtension<FontManager>('fonts');
+      if (fontsExt) {
+        const opts = el.getOptions() as { fontFamily?: string; fontUrl?: string };
+        const patch = next as { fontFamily?: string; fontUrl?: string };
+        await fontsExt.preloadFont(patch.fontFamily ?? opts.fontFamily, patch.fontUrl ?? opts.fontUrl);
+      }
+    }
     await el.update(next);
     if (isCanvasConstraintEnabled(this.ctx) && this.shouldConstrainAfterUpdate(next)) {
       await constrainElementToCanvas(this.ctx, el);

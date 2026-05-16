@@ -13,9 +13,9 @@ export class FontManager implements Extension {
   private readonly loaded = new Map<string, string>();
   private readonly pending = new Map<string, PendingFontLoad>();
 
-  init(ctx: CanvasContext): void {
+  init(_ctx: CanvasContext): void {
     this.accessors = {
-      fonts: createFontsAccessor(() => ctx.getExtension<FontManager>('fonts')),
+      fonts: createFontsAccessor(() => this),
     };
   }
 
@@ -45,6 +45,11 @@ export class FontManager implements Extension {
     return promise;
   }
 
+  async preloadFont(family: string | undefined, url: string | undefined): Promise<void> {
+    if (!family || !url) return;
+    await this.load(family, url);
+  }
+
   isLoaded(family: string): boolean {
     return this.loaded.has(family);
   }
@@ -64,3 +69,5 @@ export class FontManager implements Extension {
     }
   }
 }
+
+export const fontManager = new FontManager();

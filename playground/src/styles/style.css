@@ -708,9 +708,6 @@ textarea {
 .right {
   grid-area: right;
   border-left: 1px solid var(--line);
-  box-shadow:
-    -1px 0 0 var(--line),
-    -4px 0 16px rgba(15, 23, 42, 0.03);
   background: var(--panel);
   overflow-x: hidden;
   overflow-y: auto;

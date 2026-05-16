@@ -1,9 +1,10 @@
+import { fontManager } from '@geekybones/canvas-kit';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Field } from '@/components/ui/fields';
 import { Icon } from '@/components/ui/Icon';
 import { ICONS } from '@/icons/icons';
-import { type FontMeta, loadedFonts, preloadFont } from '@/utils/fonts';
+import { type FontMeta, getWoffUrl } from '@/utils/fonts';
 
 const ITEM_H = 32;
 
@@ -17,12 +18,13 @@ export function FontSelectField({
   onChange: (font: FontMeta | undefined) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
+  const [loadedFamilies, setLoadedFamilies] = useState<ReadonlySet<string>>(
+    () => new Set(fontManager.getLoadedFonts()),
+  );
   const triggerRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 0 });
 
-  // +1 for the "Default" row at index 0
   const virtualizer = useVirtualizer({
     count: fonts.length + 1,
     getScrollElement: () => scrollRef.current,
@@ -30,7 +32,27 @@ export function FontSelectField({
     overscan: 5,
   });
 
-  // Position menu and wire outside-click when open
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    void Promise.allSettled(
+      fonts.map(async (font) => {
+        const url = getWoffUrl(font);
+        if (!url || fontManager.isLoaded(font.family)) return;
+        await fontManager.load(font.family, url);
+        if (!cancelled) {
+          setLoadedFamilies((prev) => {
+            if (prev.has(font.family)) return prev;
+            return new Set([...prev, font.family]);
+          });
+        }
+      }),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [open, fonts]);
+
   useEffect(() => {
     if (!open) return;
     const trigger = triggerRef.current;
@@ -50,19 +72,9 @@ export function FontSelectField({
     return () => document.removeEventListener('mousedown', onDown);
   }, [open]);
 
-  // Lazy-load woff for every newly visible font row
   const virtualItems = virtualizer.getVirtualItems();
-  useEffect(() => {
-    if (!open) return;
-    for (const item of virtualItems) {
-      if (item.index === 0) continue;
-      const font = fonts[item.index - 1];
-      if (font) preloadFont(font, forceUpdate);
-    }
-  }, [open, virtualItems, fonts]);
-
   const selectedFont = value ? fonts.find((f) => f.family === value) : undefined;
-  const triggerLoaded = selectedFont ? loadedFonts.has(selectedFont.id) : false;
+  const triggerLoaded = selectedFont ? loadedFamilies.has(selectedFont.family) : false;
 
   return (
     <Field label="Font" w={2}>
@@ -103,7 +115,7 @@ export function FontSelectField({
                 }
                 const font = fonts[item.index - 1];
                 if (!font) return null;
-                const loaded = loadedFonts.has(font.id);
+                const loaded = loadedFamilies.has(font.family);
                 return (
                   <button
                     key={font.id}
