@@ -27,7 +27,7 @@
     "lineHeight": 1.3,
     "zIndex": 8,
     "fontFamily": "ABeeZee",
-    "fontUrl": "/assets/fonts/abeezee/abeezee-400-normal.woff",
+    "fontUrl": "abeezee/abeezee-400-normal.woff",
     "align": "center"
   },
   {
@@ -43,6 +43,7 @@
     "lineHeight": 1.18,
     "zIndex": 7,
     "fontFamily": "Dancing Script",
+    "fontUrl": "dancing-script/dancing-script-400-normal.woff",
     "align": "center"
   },
   {
@@ -91,7 +92,7 @@
     },
     "zIndex": 4,
     "fontFamily": "Poppins",
-    "fontUrl": "/assets/fonts/poppins/poppins-400-normal.woff"
+    "fontUrl": "poppins/poppins-400-normal.woff"
   },
   {
     "id": "layer-section-divider",
@@ -117,7 +118,7 @@
     "align": "center",
     "zIndex": 2,
     "fontFamily": "Oswald",
-    "fontUrl": "/assets/fonts/oswald/oswald-400-normal.woff"
+    "fontUrl": "oswald/oswald-400-normal.woff"
   },
   {
     "id": "layer-hero-headline",

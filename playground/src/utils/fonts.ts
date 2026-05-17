@@ -33,3 +33,13 @@ export function resolveFontUrlFromFamily(fontFamily: string): string {
   const font = fontsByFamily.get(fontFamily.toLowerCase());
   return font ? getWoffUrl(font) : '';
 }
+
+export function prepareSceneElements<T extends { type?: string; fontUrl?: string }>(
+  elements: T[],
+): T[] {
+  return elements.map((el) => {
+    if (el.type !== 'text' || typeof el.fontUrl !== 'string') return el;
+    const fontUrl = resolveUrl(el.fontUrl);
+    return fontUrl ? { ...el, fontUrl } : el;
+  });
+}
