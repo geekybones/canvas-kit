@@ -69,7 +69,11 @@ export function CanvasStage({ onReady }: CanvasStageProps) {
       if (disposed) return;
 
       const fontPreloads = sceneSeedRef.current.flatMap((el) => {
-        if (el.type !== 'text' || typeof el.fontFamily !== 'string' || typeof el.fontUrl !== 'string') {
+        if (
+          el.type !== 'text' ||
+          typeof el.fontFamily !== 'string' ||
+          typeof el.fontUrl !== 'string'
+        ) {
           return [];
         }
         if (canvas.fonts.isLoaded(el.fontFamily)) return [];
