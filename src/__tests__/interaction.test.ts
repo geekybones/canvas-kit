@@ -296,6 +296,22 @@ describe('InteractionManager', () => {
     expect(manager.getSelectedIds()).toEqual(['shape-1', 'shape-2']);
   });
 
+  it('hides the bounding box when the only selected element is not visible', () => {
+    const element = makeElement('shape-1', { visible: false });
+    const { ctx } = makeCtx([element]);
+    const manager = new InteractionManager();
+    manager.init(ctx);
+
+    manager.select('shape-1');
+
+    const boundingBox = (
+      manager as unknown as {
+        boundingBox: { container: { visible: boolean } };
+      }
+    ).boundingBox;
+    expect(boundingBox.container.visible).toBe(false);
+  });
+
   it('clears removed elements from the current selection', () => {
     const element = makeElement('shape-1');
     const { ctx } = makeCtx([element]);

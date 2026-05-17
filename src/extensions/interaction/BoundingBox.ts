@@ -86,22 +86,23 @@ export class BoundingBox {
   }
 
   update(elements: ReadonlyArray<BaseElement<BaseOptions>>): void {
-    if (elements.length === 0) {
+    const visibleElements = elements.filter((el) => el.getOptions().visible !== false);
+    if (visibleElements.length === 0) {
       this.selectionRect = null;
       this.container.visible = false;
       return;
     }
     this.container.visible = this.isVisible;
 
-    if (elements.length === 1) {
-      const [element] = elements;
+    if (visibleElements.length === 1) {
+      const [element] = visibleElements;
       if (element) {
         this.updateSingle(element);
       }
     } else {
       this.container.position.set(0, 0);
       this.container.rotation = 0;
-      const rect = this.padRect(Transform.getCombinedBoundingRect(elements));
+      const rect = this.padRect(Transform.getCombinedBoundingRect(visibleElements));
       this.selectionRect = rect;
       this.drawRect(rect);
       this.positionHandles(rect);
@@ -121,23 +122,43 @@ export class BoundingBox {
     this.container.destroy({ children: true });
   }
 
-  // Single-element path: rotate the bounding box container to match the element.
-  // Uses the world transform matrix to derive screen-space size and rotation without
-  // mutating the display object's rotation property.
   private updateSingle(el: BaseElement<BaseOptions>): void {
     const dObj = el.getDisplayObject();
+    const rotationDeg = el.getOptions().rotationDeg ?? 0;
+
+    if (Math.abs(rotationDeg) < 1e-6) {
+      this.updateSingleAxisAligned(dObj);
+      return;
+    }
+
+    this.updateSingleRotated(dObj);
+  }
+
+  private updateSingleAxisAligned(dObj: Container): void {
+    this.container.position.set(0, 0);
+    this.container.rotation = 0;
+
+    const bounds = dObj.getBounds();
+    const overlay = this.container.parent;
+    if (!overlay) return;
+
+    const topLeft = overlay.toLocal({ x: bounds.x, y: bounds.y });
+    const rect = this.padRect(new Rectangle(topLeft.x, topLeft.y, bounds.width, bounds.height));
+    this.selectionRect = rect;
+    this.drawRect(rect);
+    this.positionHandles(rect);
+  }
+
+  private updateSingleRotated(dObj: Container): void {
     const lb = dObj.getLocalBounds();
     const wt: Matrix = dObj.worldTransform;
 
-    // Local centre of the element
     const lcx = lb.x + lb.width / 2;
     const lcy = lb.y + lb.height / 2;
 
-    // Project local centre to screen space
     const screenCx = wt.a * lcx + wt.c * lcy + wt.tx;
     const screenCy = wt.b * lcx + wt.d * lcy + wt.ty;
 
-    // Decompose scale and rotation from the world transform
     const worldScaleX = Math.sqrt(wt.a * wt.a + wt.b * wt.b);
     const worldScaleY = Math.sqrt(wt.c * wt.c + wt.d * wt.d);
     const worldRotation = Math.atan2(wt.b, wt.a);
