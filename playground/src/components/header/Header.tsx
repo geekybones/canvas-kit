@@ -8,10 +8,7 @@ import { HeaderTools } from '@/components/header/HeaderTools';
 import { Icon } from '@/components/ui/Icon';
 import { ICONS } from '@/icons/icons';
 import type { PanelControls } from '@/layout/panelControls';
-import {
-  createPlaygroundElement,
-  type AddElementKind,
-} from '@/utils/createPlaygroundElement';
+import { type AddElementKind, createPlaygroundElement } from '@/utils/createPlaygroundElement';
 import { downloadBlob } from '@/utils/downloadBlob';
 
 export function Header({ panels }: { panels: PanelControls }) {

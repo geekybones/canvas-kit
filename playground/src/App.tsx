@@ -1,9 +1,8 @@
 import type { CanvasKit } from '@geekybones/canvas-kit';
 import { useCallback, useEffect, useState } from 'react';
-import { CanvasProvider } from '@/canvas';
+import { CanvasProvider, useCanvasStore } from '@/canvas';
 import { CanvasPendingOverlay } from '@/components/CanvasPendingOverlay';
 import { CanvasStage } from '@/components/canvas/CanvasStage';
-import { useCanvasStore } from '@/canvas';
 import type { PanelControls } from '@/layout/panelControls';
 import { ShellHeader, ShellLeft, ShellRight } from '@/shell';
 
@@ -52,11 +51,7 @@ export function App() {
     onClosePanels: closePanels,
   };
 
-  const appClass = [
-    'app',
-    leftOpen ? 'panel-left-open' : '',
-    rightOpen ? 'panel-right-open' : '',
-  ]
+  const appClass = ['app', leftOpen ? 'panel-left-open' : '', rightOpen ? 'panel-right-open' : '']
     .filter(Boolean)
     .join(' ');
 

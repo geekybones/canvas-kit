@@ -1,7 +1,7 @@
 import { CanvasKit, type SerializedElement } from '@geekybones/canvas-kit';
 import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { CanvasHostResize } from '@/components/canvas/CanvasHostResize';
 import { useCanvasStore } from '@/canvas';
+import { CanvasHostResize } from '@/components/canvas/CanvasHostResize';
 import mockScene from '@/data/mockScene';
 import { parseJsonColors } from '@/utils/colors';
 

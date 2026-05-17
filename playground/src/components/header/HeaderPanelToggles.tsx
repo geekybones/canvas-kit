@@ -15,7 +15,7 @@ export function HeaderPanelToggles({
   onToggleRight,
 }: HeaderPanelTogglesProps) {
   return (
-    <div className="hdr-panel-toggles" role="group" aria-label="Panels">
+    <fieldset className="hdr-panel-toggles" aria-label="Panels">
       <button
         type="button"
         className={`iconbtn hdr-panel-btn${leftOpen ? ' on' : ''}`}
@@ -36,6 +36,6 @@ export function HeaderPanelToggles({
       >
         <Icon d={ICONS.sliders} size={16} />
       </button>
-    </div>
+    </fieldset>
   );
 }
