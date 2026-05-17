@@ -1,7 +1,9 @@
 import type { FederatedPointerEvent } from 'pixi.js';
 import type { BaseOptions } from '@/core/BaseOptions';
+import type { BaseElement } from '@/core/BaseElement';
 import {
   clampBoundsDelta,
+  constrainElementToCanvas,
   getCanvasWorldBounds,
   getCombinedElementWorldBounds,
   getElementWorldBounds,
@@ -102,10 +104,9 @@ export function startResize(
   const onMove = rafThrottle(processResize);
 
   return attachStageDrag(ctx, onMove, () => {
-    for (const el of elements) {
-      ctx.ctx.events.emit('element:updated', el.getId());
-    }
-    ctx.recordGroupUpdate(elements, startStates, 'resize');
+    void commitGestureTransform(ctx, elements, () => {
+      ctx.recordGroupUpdate(elements, startStates, 'resize');
+    });
   });
 }
 
@@ -138,16 +139,15 @@ export function startRotate(ctx: InteractionGesturesContext, e: FederatedPointer
   const onMove = rafThrottle(processRotate);
 
   return attachStageDrag(ctx, onMove, () => {
-    for (const el of elements) {
-      ctx.ctx.events.emit('element:updated', el.getId());
-    }
-    ctx.recordGroupUpdate(
-      elements,
-      captureElementOptions(elements, (element) => ({
-        rotationDeg: startRots.get(element.getId()) ?? 0,
-      })),
-      'rotate',
-    );
+    void commitGestureTransform(ctx, elements, () => {
+      ctx.recordGroupUpdate(
+        elements,
+        captureElementOptions(elements, (element) => ({
+          rotationDeg: startRots.get(element.getId()) ?? 0,
+        })),
+        'rotate',
+      );
+    });
   });
 }
 
@@ -253,11 +253,24 @@ export function startElementDrag(
     snap?.hideLines();
     ctx.boundingBox.show();
     ctx.updateBoundingBox();
-    for (const [id] of startPositions) {
-      ctx.ctx.events.emit('element:updated', id);
-    }
-    ctx.recordGroupUpdate(selectedElements, startPositions, 'move');
+    void commitGestureTransform(ctx, selectedElements, () => {
+      ctx.recordGroupUpdate(selectedElements, startPositions, 'move');
+    });
   });
+}
+
+async function commitGestureTransform(
+  ctx: InteractionGesturesContext,
+  elements: readonly BaseElement<BaseOptions>[],
+  onCommitted: () => void,
+): Promise<void> {
+  for (const el of elements) {
+    if (isCanvasConstraintEnabled(ctx.ctx)) {
+      await constrainElementToCanvas(ctx.ctx, el);
+    }
+    ctx.ctx.events.emit('element:updated', el.getId());
+  }
+  onCommitted();
 }
 
 function resolveSnapLinePosition(

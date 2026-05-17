@@ -6,9 +6,9 @@ export interface StarOptions extends BaseOptions {
   points: number;
   width: number;
   height: number;
-  fill?: number;
+  fill?: number | string;
   fillAlpha?: number;
-  stroke?: number;
+  stroke?: number | string;
   strokeWidth?: number;
   strokeAlpha?: number;
   strokeAlign?: StrokeAlign;

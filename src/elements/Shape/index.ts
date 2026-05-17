@@ -20,12 +20,18 @@ const Circle = 'shape:circle' as const;
 const Star = 'shape:star' as const;
 const Line = 'shape:line' as const;
 
-function create(type: typeof Rectangle, options: RectangleOptions): RectangleShape;
-function create(type: typeof Circle, options: CircleOptions): CircleShape;
-function create(type: typeof Star, options: StarOptions): StarShape;
-function create(type: typeof Line, options: LineOptions): LineShape;
-function create(type: string, options: BaseOptions): BaseElement<BaseOptions> {
-  return createShape({ ...options, type });
+type ShapeInput<T extends BaseOptions> = Omit<T, 'type' | 'id'> & { id?: string };
+
+function create(type: typeof Rectangle, options: ShapeInput<RectangleOptions>): RectangleShape;
+function create(type: typeof Circle, options: ShapeInput<CircleOptions>): CircleShape;
+function create(type: typeof Star, options: ShapeInput<StarOptions>): StarShape;
+function create(type: typeof Line, options: ShapeInput<LineOptions>): LineShape;
+function create(
+  type: string,
+  options: Omit<BaseOptions, 'type' | 'id'> & { id?: string },
+): BaseElement<BaseOptions> {
+  const id = options.id ?? crypto.randomUUID();
+  return createShape({ ...options, type, id } as BaseOptions);
 }
 
 function register(type: string, factory: ElementFactory): void {

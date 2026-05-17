@@ -64,6 +64,7 @@ export function CanvasStage({ onReady }: CanvasStageProps) {
     const width = Math.max(1, host.clientWidth);
     const height = Math.max(1, host.clientHeight);
     const canvas = new CanvasKit(host, { ...kitConfig, width, height });
+    void canvas.warmup();
     let disposed = false;
     let detachSeedListeners: (() => void) | undefined;
 

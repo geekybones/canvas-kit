@@ -18,7 +18,7 @@ CanvasKit is a modular, extensible canvas runtime built on [PixiJS v8](https://p
 | **Export** | Render to PNG `Blob` or base64 data URL at standard / HD / ultra resolution |
 | **Fonts** | Load custom web fonts via the `FontFace` API |
 | **Context menu** | Built-in right-click menu with a full custom handler override |
-| **Performance** | Dirty-tracking per element and asset cache ref-counting |
+| **Performance** | Asset cache reference counting (retain/release) |
 
 ## Installation
 
@@ -63,7 +63,6 @@ await canvas.add(Text.create({
 
 await canvas.add(Shape.create(Shape.Rectangle, {
   id: 'card',
-  type: 'shape:rectangle',
   x: 140,
   y: 220,
   width: 320,

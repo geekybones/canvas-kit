@@ -15,7 +15,7 @@ These extensions are active unless you pass `false`:
 | `serialization` | `canvas.serializer` | Scene serialization to/from JSON |
 | `export` | `canvas.export` | Render to PNG or base64 |
 | `fonts` | `canvas.fonts` | Load web fonts via FontFace API |
-| `performance` | `canvas.performance` | Dirty tracking and asset cache |
+| `performance` | `canvas.performance` | Asset reference counting (retain/release) |
 | `contextMenu` | `canvas.contextMenu` | Right-click context menus |
 
 ## Opt-in

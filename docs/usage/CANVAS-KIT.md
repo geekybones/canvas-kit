@@ -53,24 +53,70 @@ Always await `canvas.ready` before adding elements or calling any accessor metho
 
 ---
 
+## Configuration
+
+### `configure(patch)`
+
+```ts
+configure(patch: Partial<CanvasKitOptions>): void
+```
+
+Hot-patches supported options without recreating the canvas. Safe to call after `canvas.ready`.
+
+| Field | Effect |
+|---|---|
+| `backgroundColor` | Updates the renderer background color immediately |
+| `constrainToCanvas` | Enables or disables the drag-to-boundary constraint |
+| `extensions.grid` | Updates `cellSize`, `majorInterval`, and/or `visible` on the active grid |
+| `extensions.snap` | Passes the object to `snap.configure()` (threshold, line color, etc.) |
+| `extensions.camera` | Hot-patches `zoom`, `x`, and `y` via `camera.setState()` (use `canvas.camera.setState()` for pan without `configure`) |
+
+Extension enable/disable flags (`interaction`, `history`, `layering`, etc.) are **not** hot-patchable — they require constructing a new `CanvasKit` instance.
+
+```ts
+// Change background color
+canvas.configure({ backgroundColor: '#f8fafc' });
+
+// Update grid appearance
+canvas.configure({ extensions: { grid: { cellSize: 20, visible: true } } });
+
+// Adjust snap threshold
+canvas.configure({ extensions: { snap: { threshold: 8 } } });
+```
+
+---
+
 ## Element operations
 
 ### `add(element)`
 
 ```ts
-add(element: BaseElement<BaseOptions>): Promise<void>
+add(element: BaseElement<BaseOptions>): Promise<string>
 ```
 
-Adds an element to the canvas. If an element with the same `id` already exists, the existing element is updated with the new options (upsert behaviour). When history is enabled, this is recorded as an `'add'` command.
+Adds an element to the canvas and returns its assigned id. If an element with the same `id` already exists, the existing element is updated with the new options (upsert behaviour). When history is enabled, this is recorded as an `'add'` command.
 
 ```ts
-await canvas.add(Shape.create(Shape.Rectangle, {
-  id: 'rect-1',
-  type: 'shape:rectangle',
+const id = await canvas.add(Shape.create(Shape.Rectangle, {
   width: 200,
   height: 100,
   fill: 0x4f86f7,
 }));
+```
+
+### `addMany(elements)`
+
+```ts
+addMany(elements: readonly BaseElement<BaseOptions>[]): Promise<string[]>
+```
+
+Adds multiple elements in a single call and returns their ids in the same order. When history is enabled the entire batch is recorded as **one** undo entry — a single undo removes all of them.
+
+```ts
+const [id1, id2] = await canvas.addMany([
+  Shape.create(Shape.Rectangle, { width: 200, height: 100, fill: 0x4f86f7 }),
+  Shape.create(Shape.Circle, { radius: 60, fill: 0xf59e0b }),
+]);
 ```
 
 ### `remove(id)`
@@ -85,19 +131,22 @@ Removes an element by id. When history is enabled, this is recorded as a `'remov
 await canvas.remove('rect-1');
 ```
 
-### `update(id, patch)`
+### `update(id, patch, options?)`
 
 ```ts
-update(id: string, patch: Partial<BaseOptions>): Promise<void>
+update(id: string, patch: ElementPatch, options?: { track?: boolean }): Promise<void>
 ```
 
 Applies a partial options patch to an existing element. Only the supplied fields are changed. When history is enabled, `update()` automatically classifies the change kind (`'move'`, `'resize'`, `'rotate'`, `'zOrder'`, `'text'`) based on which fields are being updated.
 
+Pass `{ track: false }` to apply a patch without recording it in the undo stack. Useful for live preview updates (e.g. dragging a color picker before the user releases).
+
 ```ts
-await canvas.update('rect-1', { x: 200, y: 150 });         // recorded as 'move'
-await canvas.update('rect-1', { scaleX: 1.5, scaleY: 1.5 }); // recorded as 'resize'
-await canvas.update('rect-1', { rotationDeg: 45 });         // recorded as 'rotate'
-await canvas.update('rect-1', { fill: 0xff0000 });          // not tracked (style change)
+await canvas.update('rect-1', { x: 200, y: 150 });            // recorded as 'move'
+await canvas.update('rect-1', { scaleX: 1.5, scaleY: 1.5 });  // recorded as 'resize'
+await canvas.update('rect-1', { rotationDeg: 45 });            // recorded as 'rotate'
+await canvas.update('rect-1', { fill: 0xff0000 });             // not tracked (style change)
+await canvas.update('rect-1', { fill: preview }, { track: false }); // never tracked
 ```
 
 ### `clear()`
@@ -107,6 +156,77 @@ clear(): void
 ```
 
 Removes every registered element. This is not recorded in history.
+
+### `getIds()`
+
+```ts
+getIds(): string[]
+```
+
+Returns the ids of all elements currently on the canvas. Does not require the serialization extension.
+
+```ts
+const ids = canvas.getIds();
+```
+
+### `getAll()`
+
+```ts
+getAll(): SerializedElement[]
+```
+
+Returns serialized options for every element on the canvas. Uses the serialization extension when available; falls back to raw `getOptions()` when the serializer is disabled.
+
+```ts
+const elements = canvas.getAll();
+```
+
+### `warmup()`
+
+```ts
+warmup(): Promise<void>
+```
+
+Pre-compiles GPU pipelines and pre-uploads geometry/textures to the GPU before any real content renders. Covers the three main PixiJS shader paths: Graphics fill, Graphics stroke, and the texture batch renderer (used by images and text). Uses the PixiJS `prepare` plugin under the hood.
+
+Call it as early as possible — ideally right after constructing the instance — so the cost is absorbed before the first user-visible frame.
+
+```ts
+const canvas = new CanvasKit(container, options);
+void canvas.warmup(); // fire-and-forget; awaits canvas.ready internally
+
+await canvas.ready;
+// pipelines compiled — first real element renders without stutter
+await canvas.add(Shape.create(Shape.Rectangle, { width: 200, height: 100 }));
+```
+
+### `width` / `height`
+
+```ts
+readonly width: number
+readonly height: number
+```
+
+Current canvas dimensions in pixels. Reflects the size after any `resize()` call. Requires `canvas.ready` to have resolved.
+
+```ts
+await canvas.ready;
+console.log(canvas.width, canvas.height); // e.g. 1920, 1080
+```
+
+### `resize(width, height)`
+
+```ts
+resize(width: number, height: number): void
+```
+
+Resizes the canvas renderer to the given pixel dimensions. Updates `canvas.width` and `canvas.height`. Requires `canvas.ready` to have resolved.
+
+```ts
+window.addEventListener('resize', () => {
+  canvas.resize(container.clientWidth, container.clientHeight);
+});
+```
 
 ### `get(id)` / `get(id, true)`
 
@@ -140,8 +260,13 @@ Both methods are chainable. Listeners receive strongly-typed arguments based on 
 |---|---|---|
 | `element:added` | `id: string` | An element was added to the canvas |
 | `element:removed` | `id: string` | An element was removed from the canvas |
-| `element:updated` | `id: string` | An element's options were changed |
+| `element:updated` | `id: string` | Committed change — persisted to history and triggers serialization/layer rebuild |
+| `element:transforming` | `id: string` | In-flight gesture frame — position/scale/rotation changing but not yet committed |
 | `element:selected` | `ids: string \| readonly string[] \| null` | The selection changed |
+| `element:click` | `id: string` | Pointer tapped an element (requires interaction extension) |
+| `element:dblclick` | `id: string` | Pointer double-tapped an element (requires interaction extension) |
+| `element:pointerenter` | `id: string` | Pointer moved onto an element (requires interaction extension) |
+| `element:pointerleave` | `id: string` | Pointer moved off an element (requires interaction extension) |
 | `history:changed` | *(none)* | Undo/redo stack was modified |
 | `layer:changed` | *(none)* | Z-order was changed |
 | `camera:changed` | `state: { zoom, x, y }` | Camera moved or zoomed |
@@ -178,7 +303,7 @@ After `await canvas.ready`, each enabled extension attaches a typed accessor nam
 | `canvas.contextMenu` | `contextMenu` | Open/close context menu programmatically |
 | `canvas.export` | `export` | Render to PNG or base64 |
 | `canvas.fonts` | `fonts` | Load custom web fonts |
-| `canvas.performance` | `performance` | Dirty tracking, asset retain/release |
+| `canvas.performance` | `performance` | Asset reference counting (retain/release) |
 | `canvas.grid` | `grid` | Grid visibility and sizing *(opt-in)* |
 | `canvas.snap` | `snap` | Snap resolution, guides, config *(opt-in)* |
 
@@ -276,11 +401,6 @@ canvas.fonts.getLoadedFonts();          // readonly string[]
 ### Performance
 
 ```ts
-canvas.performance.markDirty('id');
-canvas.performance.isDirty('id');       // boolean
-canvas.performance.flushDirty();        // readonly string[] — all dirty ids, then clears
-canvas.performance.clearDirty();        // clear without returning
-
 canvas.performance.retainAsset('/asset.png');
 await canvas.performance.releaseAsset('/asset.png');  // unloads when refcount hits 0
 await canvas.performance.clearAssets();               // unload all tracked assets

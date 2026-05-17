@@ -31,13 +31,34 @@ export function applyHistoryAwareChange(
   return Promise.resolve(withHistory(history));
 }
 
-export function addWithHistory(
+export async function addManyWithHistory(
+  ctx: CanvasKitActionsContext,
+  elements: readonly BaseElement<BaseOptions>[],
+): Promise<string[]> {
+  if (elements.length === 0) return [];
+  const ids = elements.map((el) => el.getId());
+
+  await applyHistoryAwareChange(
+    ctx.getHistoryManager,
+    async () => {
+      for (const el of elements) {
+        await ctx.addElement(el);
+      }
+    },
+    (history) => history.add(elements.map((el) => el.getOptions())),
+  );
+
+  return ids;
+}
+
+export async function addWithHistory(
   ctx: CanvasKitActionsContext,
   element: BaseElement<BaseOptions>,
-): Promise<void> {
-  const existing = ctx.registry.get(element.getId());
+): Promise<string> {
+  const id = element.getId();
+  const existing = ctx.registry.get(id);
 
-  return applyHistoryAwareChange(
+  await applyHistoryAwareChange(
     ctx.getHistoryManager,
     () => ctx.addElement(element),
     (history) => {
@@ -56,6 +77,8 @@ export function addWithHistory(
       return history.add([element.getOptions()]);
     },
   );
+
+  return id;
 }
 
 export function removeWithHistory(ctx: CanvasKitActionsContext, id: string): Promise<void> {
@@ -70,10 +93,15 @@ export function updateWithHistory(
   ctx: CanvasKitActionsContext,
   id: string,
   next: Partial<BaseOptions>,
+  track = true,
 ): Promise<void> {
   const element = ctx.registry.get(id);
   if (!element) {
     return Promise.resolve();
+  }
+
+  if (!track) {
+    return Promise.resolve(ctx.updateElement(element, next));
   }
 
   const kind = ctx.getUpdateKind(element, next);

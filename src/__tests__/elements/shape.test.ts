@@ -6,7 +6,6 @@ describe('Shape elements', () => {
   it('creates rectangle', () => {
     const el = Shape.create(Shape.Rectangle, {
       id: 's1',
-      type: 'shape:rectangle',
       width: 100,
       height: 50,
       fill: 0xff0000,
@@ -19,7 +18,6 @@ describe('Shape elements', () => {
   it('creates circle', () => {
     const el = Shape.create(Shape.Circle, {
       id: 's2',
-      type: 'shape:circle',
       radius: 40,
       fill: 0x00ff00,
     });
@@ -30,7 +28,6 @@ describe('Shape elements', () => {
   it('creates star', () => {
     const el = Shape.create(Shape.Star, {
       id: 's3',
-      type: 'shape:star',
       points: 5,
       width: 100,
       height: 100,
@@ -43,7 +40,6 @@ describe('Shape elements', () => {
   it('creates line', () => {
     const el = Shape.create(Shape.Line, {
       id: 's4',
-      type: 'shape:line',
       width: 100,
       stroke: 0x000000,
     });
@@ -51,10 +47,24 @@ describe('Shape elements', () => {
     expect(el.getType()).toBe('shape:line');
   });
 
+  it('auto-generates id when omitted', () => {
+    const el = Shape.create(Shape.Rectangle, { width: 80, height: 60 });
+    expect(el.getId()).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it('accepts hex string fill', () => {
+    const el = Shape.create(Shape.Rectangle, {
+      id: 'hex-fill',
+      width: 80,
+      height: 60,
+      fill: '#ff0000',
+    });
+    expect((el.getOptions() as { fill?: unknown }).fill).toBe('#ff0000');
+  });
+
   it('rectangle init runs without error', () => {
     const el = Shape.create(Shape.Rectangle, {
       id: 's5',
-      type: 'shape:rectangle',
       width: 80,
       height: 60,
     });
@@ -65,7 +75,6 @@ describe('Shape elements', () => {
   it('rectangle update patches options', () => {
     const el = Shape.create(Shape.Rectangle, {
       id: 's6',
-      type: 'shape:rectangle',
       width: 80,
       height: 60,
     });
@@ -80,7 +89,6 @@ describe('Shape elements', () => {
     Shape.register('shape:custom', (opts) =>
       Shape.create(Shape.Rectangle, {
         ...opts,
-        type: 'shape:rectangle',
         width: 80,
         height: 40,
       }),

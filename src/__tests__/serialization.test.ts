@@ -62,7 +62,6 @@ describe('SerializationManager', () => {
   it('serializes a Rectangle element', () => {
     const el = Shape.create(Shape.Rectangle, {
       id: 'rect1',
-      type: 'shape:rectangle',
       width: 100,
       height: 50,
       fill: 0xff0000,
@@ -91,7 +90,7 @@ describe('SerializationManager', () => {
 
   it('serializeAll returns array of all elements', async () => {
     const el1 = Text.create({ id: 't1', type: 'text', text: 'A' });
-    const el2 = Shape.create(Shape.Circle, { id: 'c1', type: 'shape:circle', radius: 30 });
+    const el2 = Shape.create(Shape.Circle, { id: 'c1', radius: 30 });
     await el1.init();
     el2.init();
     registry.add(el1);
@@ -140,7 +139,6 @@ describe('SerializationManager', () => {
     );
     const existing = Shape.create(Shape.Rectangle, {
       id: 'r1',
-      type: 'shape:rectangle',
       width: 50,
       height: 40,
       fill: 0xff0000,
@@ -162,7 +160,6 @@ describe('SerializationManager', () => {
     );
     const existing = Shape.create(Shape.Rectangle, {
       id: 'r1',
-      type: 'shape:rectangle',
       width: 50,
       height: 40,
       fill: 0xff0000,

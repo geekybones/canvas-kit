@@ -5,16 +5,13 @@ import { makePlaceholderImage } from '@/utils/makePlaceholderImage';
 
 export type AddElementKind = 'text' | 'image' | 'rect' | 'ellipse' | 'line';
 
-const createElementId = (prefix: string) => `${prefix}-${crypto.randomUUID()}`;
-
 export async function createPlaygroundElement(canvas: CanvasKit, kind: AddElementKind) {
   if (kind === 'text') {
-    const id = createElementId('text');
-    await canvas.add(
+    const id = await canvas.add(
       Text.create({
-        id,
-        name: 'Text',
+        id: crypto.randomUUID(),
         type: 'text',
+        name: 'Text',
         text: 'Hello CanvasKit',
         fontSize: 36,
         fontWeight: 'bold',
@@ -26,12 +23,11 @@ export async function createPlaygroundElement(canvas: CanvasKit, kind: AddElemen
   }
 
   if (kind === 'image') {
-    const id = createElementId('image');
-    await canvas.add(
+    const id = await canvas.add(
       Image.create({
-        id,
-        name: 'Image',
+        id: crypto.randomUUID(),
         type: 'image',
+        name: 'Image',
         src: makePlaceholderImage('Demo Image'),
         width: 280,
         height: 180,
@@ -42,12 +38,9 @@ export async function createPlaygroundElement(canvas: CanvasKit, kind: AddElemen
   }
 
   if (kind === 'rect') {
-    const id = createElementId('rect');
-    await canvas.add(
+    const id = await canvas.add(
       Shape.create(Shape.Rectangle, {
-        id,
         name: 'Rectangle',
-        type: 'shape:rectangle',
         width: 180,
         height: 120,
         fill: 0x7c5cff,
@@ -62,12 +55,9 @@ export async function createPlaygroundElement(canvas: CanvasKit, kind: AddElemen
   }
 
   if (kind === 'ellipse') {
-    const id = createElementId('ellipse');
-    await canvas.add(
+    const id = await canvas.add(
       Shape.create(Shape.Circle, {
-        id,
         name: 'Ellipse',
-        type: 'shape:circle',
         width: 160,
         height: 160,
         fill: 0xffb020,
@@ -78,12 +68,9 @@ export async function createPlaygroundElement(canvas: CanvasKit, kind: AddElemen
     return;
   }
 
-  const id = createElementId('line');
-  await canvas.add(
+  const id = await canvas.add(
     Shape.create(Shape.Line, {
-      id,
       name: 'Line',
-      type: 'shape:line',
       width: 220,
       stroke: 0x0f172a,
       strokeWidth: 3,

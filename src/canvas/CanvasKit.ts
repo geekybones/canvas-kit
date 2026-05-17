@@ -1,13 +1,16 @@
 import { Color } from 'pixi.js';
 import { Application } from '@/canvas/Application';
 import {
+  addManyWithHistory,
   addWithHistory,
   clearElements,
   getElementSnapshot,
   removeWithHistory,
   updateWithHistory,
 } from '@/canvas/CanvasKitActions';
+import type { CameraState } from '@/core/Events';
 import type { CanvasKitOptions } from '@/canvas/CanvasKitOptions';
+import type { CameraConfig } from '@/extensions/camera/types';
 import { loadElements } from '@/canvas/ElementLoader';
 import { loadExtensions } from '@/canvas/ExtensionLoader';
 import type { BaseElement } from '@/core/BaseElement';
@@ -242,20 +245,40 @@ export class CanvasKit {
     };
   }
 
-  add(element: BaseElement<BaseOptions>): Promise<void> {
+  add(element: BaseElement<BaseOptions>): Promise<string> {
     return addWithHistory(this.getActionsContext(), element);
+  }
+
+  addMany(elements: readonly BaseElement<BaseOptions>[]): Promise<string[]> {
+    return addManyWithHistory(this.getActionsContext(), elements);
   }
 
   remove(id: string): Promise<void> {
     return removeWithHistory(this.getActionsContext(), id);
   }
 
-  update(id: string, next: ElementPatch): Promise<void> {
-    return updateWithHistory(this.getActionsContext(), id, next as Partial<BaseOptions>);
+  update(id: string, next: ElementPatch, options?: { track?: boolean }): Promise<void> {
+    return updateWithHistory(
+      this.getActionsContext(),
+      id,
+      next as Partial<BaseOptions>,
+      options?.track !== false,
+    );
   }
 
   clear(): void {
     clearElements(this.registry, (id) => this.removeElement(id));
+  }
+
+  getIds(): string[] {
+    return [...this.registry.getAll().keys()];
+  }
+
+  getAll(): SerializedElement[] {
+    const serializer = this.getSerializationManager();
+    return [...this.registry.getAll().values()].map((el) =>
+      serializer ? serializer.serialize(el) : (el.getOptions() as SerializedElement),
+    );
   }
 
   get(id: string, raw?: false): SerializedElement | undefined;
@@ -318,14 +341,43 @@ export class CanvasKit {
 
       if (typeof ext.camera === 'object') {
         const camera = this.extensions.get('camera') as
-          | { setState?: (s: Partial<{ zoom: number; x: number; y: number }>) => void }
+          | { setState?: (s: Partial<CameraState>) => void }
           | undefined;
-        const { zoom, ...cameraRest } = ext.camera;
-        if (Object.keys(cameraRest).length === 0 && zoom !== undefined) {
-          camera?.setState?.({ zoom });
+        const cam = ext.camera as CameraConfig & Partial<CameraState>;
+        const state: Partial<CameraState> = {};
+        if (cam.zoom !== undefined) state.zoom = cam.zoom;
+        if (cam.x !== undefined) state.x = cam.x;
+        if (cam.y !== undefined) state.y = cam.y;
+        if (Object.keys(state).length > 0) {
+          camera?.setState?.(state);
+        }
+        if (this.canvasKitOptions.extensions) {
+          const current = this.canvasKitOptions.extensions.camera;
+          this.canvasKitOptions.extensions.camera = {
+            ...(typeof current === 'object' ? current : {}),
+            ...ext.camera,
+          };
         }
       }
     }
+  }
+
+  get width(): number {
+    return this.app.width;
+  }
+
+  get height(): number {
+    return this.app.height;
+  }
+
+  resize(width: number, height: number): void {
+    this.app.resize(width, height);
+  }
+
+  async warmup(): Promise<void> {
+    await this.ready;
+    if (this.destroyed) return;
+    await this.app.warmup();
   }
 
   on<K extends keyof CanvasEventMap>(

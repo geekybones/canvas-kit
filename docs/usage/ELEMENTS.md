@@ -16,7 +16,7 @@ Every element extends `BaseOptions`, which provides the shared layout and identi
 | `scaleY` | `number?` | Vertical scale factor |
 | `zIndex` | `number?` | Stack order (managed by the layering extension) |
 | `visible` | `boolean?` | Visibility (default `true`) |
-| `selectable` | `boolean?` | Whether the interaction extension can select it (default `true`) |
+| `selectable` | `boolean?` | Whether the element can be selected and dragged (default `true`). Non-selectable elements still emit `element:click` / pointer events. |
 | `custom` | `Record<string, unknown>?` | Arbitrary app-level metadata, persisted through serialization |
 
 ---
@@ -29,6 +29,8 @@ import { Shape } from '@geekybones/canvas-kit';
 
 All shapes share stroke properties. Fill and `borderRadius` are shape-specific.
 
+The `type` field is inferred from the first argument and must not be passed in the options object. The `id` field is optional — a UUID is generated automatically when omitted.
+
 ### Rectangle
 
 ```ts
@@ -40,9 +42,9 @@ Shape.create(Shape.Rectangle, options: RectangleOptions)
 |---|---|---|
 | `width` | `number` | Width in pixels |
 | `height` | `number` | Height in pixels |
-| `fill` | `number?` | Fill color (hex number) |
+| `fill` | `number \| string?` | Fill color (hex number or CSS string) |
 | `fillAlpha` | `number?` | Fill opacity (0–1) |
-| `stroke` | `number?` | Stroke color (hex number) |
+| `stroke` | `number \| string?` | Stroke color (hex number or CSS string) |
 | `strokeWidth` | `number?` | Stroke width in pixels |
 | `strokeAlpha` | `number?` | Stroke opacity (0–1) |
 | `strokeAlign` | `'inside' \| 'center' \| 'outside'?` | Where the stroke is drawn relative to the path |
@@ -50,8 +52,6 @@ Shape.create(Shape.Rectangle, options: RectangleOptions)
 
 ```ts
 await canvas.add(Shape.create(Shape.Rectangle, {
-  id: 'card',
-  type: 'shape:rectangle',
   x: 140,
   y: 220,
   width: 320,
@@ -75,17 +75,15 @@ Shape.create(Shape.Circle, options: CircleOptions)
 | `radius` | `number?` | Radius in pixels |
 | `width` | `number?` | Width (used as diameter if radius is omitted) |
 | `height` | `number?` | Height |
-| `fill` | `number?` | Fill color |
+| `fill` | `number \| string?` | Fill color (hex number or CSS string) |
 | `fillAlpha` | `number?` | Fill opacity |
-| `stroke` | `number?` | Stroke color |
+| `stroke` | `number \| string?` | Stroke color (hex number or CSS string) |
 | `strokeWidth` | `number?` | Stroke width |
 | `strokeAlpha` | `number?` | Stroke opacity |
 | `strokeAlign` | `'inside' \| 'center' \| 'outside'?` | Stroke alignment |
 
 ```ts
 await canvas.add(Shape.create(Shape.Circle, {
-  id: 'orb',
-  type: 'shape:circle',
   x: 500,
   y: 200,
   radius: 80,
@@ -105,17 +103,15 @@ Shape.create(Shape.Star, options: StarOptions)
 | `points` | `number` | Number of star points |
 | `width` | `number` | Outer width |
 | `height` | `number` | Outer height |
-| `fill` | `number?` | Fill color |
+| `fill` | `number \| string?` | Fill color (hex number or CSS string) |
 | `fillAlpha` | `number?` | Fill opacity |
-| `stroke` | `number?` | Stroke color |
+| `stroke` | `number \| string?` | Stroke color (hex number or CSS string) |
 | `strokeWidth` | `number?` | Stroke width |
 | `strokeAlpha` | `number?` | Stroke opacity |
 | `strokeAlign` | `'inside' \| 'center' \| 'outside'?` | Stroke alignment |
 
 ```ts
 await canvas.add(Shape.create(Shape.Star, {
-  id: 'burst',
-  type: 'shape:star',
   x: 700,
   y: 180,
   points: 5,
@@ -135,15 +131,13 @@ Shape.create(Shape.Line, options: LineOptions)
 | Field | Type | Description |
 |---|---|---|
 | `width` | `number` | Line length in pixels |
-| `stroke` | `number?` | Stroke color |
+| `stroke` | `number \| string?` | Stroke color (hex number or CSS string) |
 | `strokeWidth` | `number?` | Stroke width |
 | `strokeAlpha` | `number?` | Stroke opacity |
 | `strokeAlign` | `'inside' \| 'center' \| 'outside'?` | Stroke alignment |
 
 ```ts
 await canvas.add(Shape.create(Shape.Line, {
-  id: 'rule',
-  type: 'shape:line',
   x: 80,
   y: 480,
   width: 360,
@@ -158,7 +152,6 @@ await canvas.add(Shape.create(Shape.Line, {
 Shape.register('shape:badge', (opts) =>
   Shape.create(Shape.Rectangle, {
     ...opts,
-    type: 'shape:rectangle',
     borderRadius: 999,
   }),
 );

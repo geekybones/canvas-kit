@@ -4,7 +4,7 @@ import type { StrokeAlign } from '@/elements/Shape/strokeAlign';
 export interface LineOptions extends BaseOptions {
   readonly type: 'shape:line';
   width: number;
-  stroke?: number;
+  stroke?: number | string;
   strokeWidth?: number;
   strokeAlpha?: number;
   strokeAlign?: StrokeAlign;

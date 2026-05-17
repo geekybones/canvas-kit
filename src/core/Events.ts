@@ -10,6 +10,10 @@ export type CanvasEventMap = {
   /** In-flight gesture frame — position/scale/rotation changing but not yet committed. */
   'element:transforming': [id: string];
   'element:selected': [ids: string | readonly string[] | null];
+  'element:click': [id: string];
+  'element:dblclick': [id: string];
+  'element:pointerenter': [id: string];
+  'element:pointerleave': [id: string];
   'history:changed': [];
   'layer:changed': [];
   'camera:changed': [state: CameraState];

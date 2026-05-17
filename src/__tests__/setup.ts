@@ -80,13 +80,23 @@ vi.mock('pixi.js', () => {
   }
 
   function makeApplication() {
+    const screen = { width: 800, height: 600 };
     return {
       init: vi.fn().mockResolvedValue(undefined),
       stage: { ...makeContainer(), sortableChildren: false, hitArea: null },
-      screen: { width: 800, height: 600 },
+      screen,
       canvas: Object.assign(document.createElement('canvas'), { setAttribute: vi.fn() }),
-      renderer: { extract: { canvas: vi.fn(() => document.createElement('canvas')) } },
+      renderer: {
+        extract: { canvas: vi.fn(() => document.createElement('canvas')) },
+        background: { color: 0xffffff },
+        prepare: { upload: vi.fn().mockResolvedValue(undefined) },
+        resize: vi.fn((w: number, h: number) => {
+          screen.width = w;
+          screen.height = h;
+        }),
+      },
       ticker: { add: vi.fn(), remove: vi.fn() },
+      render: vi.fn(),
       destroy: vi.fn(),
     };
   }

@@ -3,12 +3,13 @@ import { CanvasKit } from '@/canvas/CanvasKit';
 import type { BaseElement } from '@/core/BaseElement';
 import type { BaseOptions } from '@/core/BaseOptions';
 import { Shape } from '@/elements/Shape';
-import type { RectangleOptions } from '@/elements/Shape/Rectangle/RectangleOptions';
 
-function makeRect(id: string, overrides: Partial<RectangleOptions> = {}): BaseElement<BaseOptions> {
+function makeRect(
+  id: string,
+  overrides: { x?: number; width?: number; height?: number } = {},
+): BaseElement<BaseOptions> {
   return Shape.create(Shape.Rectangle, {
     id,
-    type: 'shape:rectangle',
     width: 100,
     height: 80,
     fill: 0xff0000,
@@ -28,6 +29,19 @@ describe('CanvasKit', () => {
   it('creates with ready promise', () => {
     expect(canvas).toBeDefined();
     expect(canvas.ready).toBeInstanceOf(Promise);
+  });
+
+  it('add returns the element id', async () => {
+    const rect = makeRect('r1');
+    const id = await canvas.add(rect);
+    expect(id).toBe('r1');
+  });
+
+  it('add with auto-generated id returns a uuid', async () => {
+    const rect = Shape.create(Shape.Rectangle, { width: 100, height: 80 });
+    const id = await canvas.add(rect);
+    expect(id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(canvas.get(id, true)).toBeDefined();
   });
 
   it('adds a new element', async () => {
@@ -76,6 +90,31 @@ describe('CanvasKit', () => {
 
   it('get returns undefined for missing id', () => {
     expect(canvas.get('missing')).toBeUndefined();
+  });
+
+  it('getIds returns all element ids', async () => {
+    await canvas.add(makeRect('r1'));
+    await canvas.add(makeRect('r2'));
+    expect(canvas.getIds()).toEqual(expect.arrayContaining(['r1', 'r2']));
+    expect(canvas.getIds()).toHaveLength(2);
+  });
+
+  it('getAll returns serialized elements without requiring serializer', async () => {
+    await canvas.add(makeRect('r1'));
+    await canvas.add(makeRect('r2'));
+    const all = canvas.getAll();
+    expect(all).toHaveLength(2);
+    expect(all.map((e) => e.id)).toEqual(expect.arrayContaining(['r1', 'r2']));
+  });
+
+  it('getAll works even when serializer extension is disabled', async () => {
+    const container = document.createElement('div');
+    const noSerCanvas = new CanvasKit(container, { extensions: { serialization: false } });
+    await noSerCanvas.ready;
+    await noSerCanvas.add(makeRect('r1'));
+    const all = noSerCanvas.getAll();
+    expect(all).toHaveLength(1);
+    expect(all[0]?.id).toBe('r1');
   });
 
   it('destroy cleans up extensions and registry', async () => {
@@ -143,5 +182,161 @@ describe('CanvasKit', () => {
 
     await canvas.interaction?.duplicate();
     expect(canvas.interaction?.getSelectedIds()).toHaveLength(2);
+  });
+
+  it('warmup resolves without error', async () => {
+    await expect(canvas.warmup()).resolves.toBeUndefined();
+  });
+
+  describe('addMany', () => {
+    it('adds all elements and returns their ids', async () => {
+      const ids = await canvas.addMany([makeRect('r1'), makeRect('r2'), makeRect('r3')]);
+      expect(ids).toEqual(['r1', 'r2', 'r3']);
+      expect(canvas.getIds()).toEqual(expect.arrayContaining(['r1', 'r2', 'r3']));
+      expect(canvas.getIds()).toHaveLength(3);
+    });
+
+    it('returns an empty array for empty input', async () => {
+      const ids = await canvas.addMany([]);
+      expect(ids).toEqual([]);
+    });
+
+    it('records a single history entry so one undo removes all elements', async () => {
+      await canvas.addMany([makeRect('r1'), makeRect('r2')]);
+      expect(canvas.history.canUndo()).toBe(true);
+      await canvas.history.undo();
+      expect(canvas.getIds()).toHaveLength(0);
+    });
+  });
+
+  describe('update with track: false', () => {
+    it('applies the patch without adding to the undo stack', async () => {
+      await canvas.add(makeRect('r1'));
+      const undoDepthBefore = canvas.history.canUndo();
+
+      await canvas.update('r1', { x: 999, y: 999 }, { track: false });
+
+      expect(canvas.history.canUndo()).toBe(undoDepthBefore);
+      expect(canvas.get('r1', true)?.getOptions().x).toBe(999);
+    });
+
+    it('still applies the patch when history is disabled', async () => {
+      const container = document.createElement('div');
+      const noHistCanvas = new CanvasKit(container, { extensions: { history: false } });
+      await noHistCanvas.ready;
+      await noHistCanvas.add(makeRect('r1'));
+
+      await noHistCanvas.update('r1', { x: 42 }, { track: false });
+
+      expect(noHistCanvas.get('r1', true)?.getOptions().x).toBe(42);
+    });
+  });
+
+  describe('dimensions', () => {
+    it('width and height reflect the initial canvas size', () => {
+      expect(canvas.width).toBe(800);
+      expect(canvas.height).toBe(600);
+    });
+
+    it('resize updates width and height', () => {
+      canvas.resize(1280, 720);
+      expect(canvas.width).toBe(1280);
+      expect(canvas.height).toBe(720);
+    });
+  });
+
+  describe('dimensions before ready', () => {
+    it('width and height return configured size before ready resolves', () => {
+      const container = document.createElement('div');
+      const pending = new CanvasKit(container, { width: 640, height: 480, extensions: {} });
+      expect(pending.width).toBe(640);
+      expect(pending.height).toBe(480);
+    });
+  });
+
+  describe('element pointer events', () => {
+    function getPointerHandler(
+      canvas: CanvasKit,
+      id: string,
+      event: string,
+    ): (() => void) | undefined {
+      const el = canvas.get(id, true);
+      if (!el) return undefined;
+      const displayObj = el.getDisplayObject() as unknown as { on: ReturnType<typeof vi.fn> };
+      const call = displayObj.on.mock.calls.find((args) => args[0] === event);
+      return call?.[1] as (() => void) | undefined;
+    }
+
+    it('emits element:click when the element is clicked', async () => {
+      await canvas.add(makeRect('r1'));
+      const handler = getPointerHandler(canvas, 'r1', 'click');
+      const listener = vi.fn();
+      canvas.on('element:click', listener);
+      expect(handler).toBeDefined();
+      if (handler) handler();
+      expect(listener).toHaveBeenCalledWith('r1');
+    });
+
+    it('emits element:dblclick when the element is double-clicked', async () => {
+      await canvas.add(makeRect('r1'));
+      const handler = getPointerHandler(canvas, 'r1', 'dblclick');
+      const listener = vi.fn();
+      canvas.on('element:dblclick', listener);
+      expect(handler).toBeDefined();
+      if (handler) handler();
+      expect(listener).toHaveBeenCalledWith('r1');
+    });
+
+    it('emits element:pointerenter when the pointer enters the element', async () => {
+      await canvas.add(makeRect('r1'));
+      const handler = getPointerHandler(canvas, 'r1', 'pointerenter');
+      const listener = vi.fn();
+      canvas.on('element:pointerenter', listener);
+      expect(handler).toBeDefined();
+      if (handler) handler();
+      expect(listener).toHaveBeenCalledWith('r1');
+    });
+
+    it('emits element:pointerleave when the pointer leaves the element', async () => {
+      await canvas.add(makeRect('r1'));
+      const handler = getPointerHandler(canvas, 'r1', 'pointerleave');
+      const listener = vi.fn();
+      canvas.on('element:pointerleave', listener);
+      expect(handler).toBeDefined();
+      if (handler) handler();
+      expect(listener).toHaveBeenCalledWith('r1');
+    });
+
+    it('fires pointer events for non-selectable elements', async () => {
+      const el = Shape.create(Shape.Rectangle, {
+        id: 'ns1',
+        width: 100,
+        height: 80,
+        selectable: false,
+      });
+      await canvas.add(el);
+      const handler = getPointerHandler(canvas, 'ns1', 'click');
+      const listener = vi.fn();
+      canvas.on('element:click', listener);
+      expect(handler).toBeDefined();
+      if (handler) handler();
+      expect(listener).toHaveBeenCalledWith('ns1');
+    });
+
+    it('does not emit pointer events after the element is removed', async () => {
+      await canvas.add(makeRect('r1'));
+      const el = canvas.get('r1', true);
+      expect(el).toBeDefined();
+      if (!el) return;
+      const displayObj = el.getDisplayObject() as unknown as { off: ReturnType<typeof vi.fn> };
+
+      await canvas.remove('r1');
+
+      const offCalls = displayObj.off.mock.calls.map((args) => args[0] as string);
+      expect(offCalls).toContain('click');
+      expect(offCalls).toContain('dblclick');
+      expect(offCalls).toContain('pointerenter');
+      expect(offCalls).toContain('pointerleave');
+    });
   });
 });

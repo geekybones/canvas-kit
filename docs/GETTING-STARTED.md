@@ -49,7 +49,6 @@ await canvas.add(Text.create({
 // Rectangle
 await canvas.add(Shape.create(Shape.Rectangle, {
   id: 'card',
-  type: 'shape:rectangle',
   x: 140,
   y: 220,
   width: 320,
@@ -148,7 +147,9 @@ await canvas.ready;
 
 // Add
 await canvas.add(Shape.create(Shape.Circle, {
-  id: 'c1', type: 'shape:circle', radius: 60, fill: 0x4f86f7,
+  id: 'c1',
+  radius: 60,
+  fill: 0x4f86f7,
 }));
 
 // Update

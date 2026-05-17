@@ -8,7 +8,6 @@ import { LayerManager } from '@/extensions/layering/LayerManager';
 function makeRect(id: string) {
   return Shape.create(Shape.Rectangle, {
     id,
-    type: 'shape:rectangle',
     width: 50,
     height: 50,
   });

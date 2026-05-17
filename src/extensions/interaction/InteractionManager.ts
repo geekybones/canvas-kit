@@ -56,6 +56,16 @@ export class InteractionManager implements Extension {
   private activeGestureCleanup: (() => void) | undefined;
   private boundingBoxRaf: number | undefined;
   private readonly selectableBindings = new Map<string, SelectableBinding>();
+  private readonly pointerBindings = new Map<
+    string,
+    {
+      displayObject: Container;
+      onClick: () => void;
+      onDblClick: () => void;
+      onPointerEnter: () => void;
+      onPointerLeave: () => void;
+    }
+  >();
   private clipboard: BaseOptions[] = [];
   private selectionStateContext!: InteractionSelectionStateContext;
   private selectionBindingsContext!: InteractionSelectionBindingsContext;
@@ -83,10 +93,12 @@ export class InteractionManager implements Extension {
     const selection = this.getSelectionBindingsContext();
     for (const id of ctx.registry.getAll().keys()) {
       syncSelectableElement(selection, id);
+      this.syncPointerEvents(id);
     }
 
     const onElementAdded = (id: string) => {
       syncSelectableElement(this.getSelectionBindingsContext(), id);
+      this.syncPointerEvents(id);
     };
     ctx.events.on('element:added', onElementAdded);
     this.cleanupFns.push(() => ctx.events.off('element:added', onElementAdded));
@@ -94,6 +106,7 @@ export class InteractionManager implements Extension {
     const onElementRemoved = (id: string) => {
       this.selectedIds.delete(id);
       detachSelectableElement(this.getSelectionBindingsContext(), id);
+      this.detachPointerEvents(id);
       updateBoundingBox(this.getSelectionStateContext());
     };
     ctx.events.on('element:removed', onElementRemoved);
@@ -101,6 +114,7 @@ export class InteractionManager implements Extension {
 
     const onElementUpdated = (id: string) => {
       syncSelectableElement(this.getSelectionBindingsContext(), id);
+      this.syncPointerEvents(id);
       if (this.selectedIds.has(id)) {
         this.refreshBoundingBoxForSelection();
       }
@@ -307,6 +321,9 @@ export class InteractionManager implements Extension {
     for (const id of this.selectableBindings.keys()) {
       detachSelectableElement(this.getSelectionBindingsContext(), id);
     }
+    for (const id of [...this.pointerBindings.keys()]) {
+      this.detachPointerEvents(id);
+    }
     this.shortcuts?.destroy();
     for (const cleanup of this.cleanupFns) cleanup();
     this.cleanupFns = [];
@@ -356,6 +373,57 @@ export class InteractionManager implements Extension {
         this.clipboard = items;
       },
     };
+  }
+
+  private syncPointerEvents(id: string): void {
+    const el = this.ctx.registry.get(id);
+    if (!el) {
+      this.detachPointerEvents(id);
+      return;
+    }
+
+    const displayObject = el.getDisplayObject();
+    const existing = this.pointerBindings.get(id);
+    if (existing?.displayObject === displayObject) return;
+
+    this.detachPointerEvents(id);
+    displayObject.eventMode = 'static';
+
+    const onClick = () => {
+      this.ctx.events.emit('element:click', id);
+    };
+    const onDblClick = () => {
+      this.ctx.events.emit('element:dblclick', id);
+    };
+    const onPointerEnter = () => {
+      this.ctx.events.emit('element:pointerenter', id);
+    };
+    const onPointerLeave = () => {
+      this.ctx.events.emit('element:pointerleave', id);
+    };
+
+    displayObject.on('click', onClick);
+    displayObject.on('dblclick', onDblClick);
+    displayObject.on('pointerenter', onPointerEnter);
+    displayObject.on('pointerleave', onPointerLeave);
+
+    this.pointerBindings.set(id, {
+      displayObject,
+      onClick,
+      onDblClick,
+      onPointerEnter,
+      onPointerLeave,
+    });
+  }
+
+  private detachPointerEvents(id: string): void {
+    const binding = this.pointerBindings.get(id);
+    if (!binding) return;
+    binding.displayObject.off('click', binding.onClick);
+    binding.displayObject.off('dblclick', binding.onDblClick);
+    binding.displayObject.off('pointerenter', binding.onPointerEnter);
+    binding.displayObject.off('pointerleave', binding.onPointerLeave);
+    this.pointerBindings.delete(id);
   }
 
   private getSelectionStateContext(): InteractionSelectionStateContext {
