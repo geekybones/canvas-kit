@@ -6,6 +6,7 @@ export function CanvasPendingOverlay() {
 
   return (
     <div className="canvas-kit-pending" role="status" aria-live="polite">
+      <div className="canvas-kit-spinner" aria-hidden="true" />
       <div className="empty">
         <div className="ehead">Preparing CanvasKit…</div>
         <div className="esub">

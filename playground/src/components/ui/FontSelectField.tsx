@@ -79,7 +79,7 @@ export function FontSelectField({
   const triggerLoaded = selectedFont ? loadedFamilies.has(selectedFont.family) : false;
 
   return (
-    <Field label="Font" w={2}>
+    <Field label="Font" w={2} inputClassName="finp-plain">
       <button
         ref={triggerRef}
         type="button"

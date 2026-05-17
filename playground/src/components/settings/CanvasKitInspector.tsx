@@ -175,7 +175,7 @@ export function CanvasKitInspector() {
           </button>
           <button
             type="button"
-            className="ck-btn primary"
+            className={`ck-btn primary${isDirty ? ' dirty' : ''}`}
             onClick={() => updateCanvas((prev) => ({ ...prev, config: draft }))}
             disabled={!isDirty}
           >
@@ -237,7 +237,7 @@ export function CanvasKitInspector() {
         </div>
       </Section>
 
-      <Section title="History">
+      <Section title="History" collapsible defaultOpen={false}>
         <ToggleField
           label="Enabled"
           checked={extensions.history !== false}
@@ -298,7 +298,7 @@ export function CanvasKitInspector() {
         ) : null}
       </Section>
 
-      <Section title="Interaction">
+      <Section title="Interaction" collapsible defaultOpen={false}>
         <ToggleField
           label="Enabled"
           checked={extensions.interaction !== false}
@@ -383,12 +383,12 @@ export function CanvasKitInspector() {
                     min={0}
                   />
                 </div>
-                <div className="pair-row">
-                  <StringColorField
-                    label="Stroke"
-                    value={interactionConfig.theme?.marquee?.strokeColor?.toString() ?? '#4285f4'}
-                    onChange={(value) => setMarqueeTheme({ strokeColor: value })}
-                  />
+                <StringColorField
+                  label="Stroke"
+                  value={interactionConfig.theme?.marquee?.strokeColor?.toString() ?? '#4285f4'}
+                  onChange={(value) => setMarqueeTheme({ strokeColor: value })}
+                />
+                <div className="pair-row pair-row-even">
                   <NumberField
                     label="Stroke W"
                     value={interactionConfig.theme?.marquee?.strokeWidth ?? 1}
@@ -396,20 +396,20 @@ export function CanvasKitInspector() {
                     min={0.5}
                     step={0.5}
                   />
+                  <NumberField
+                    label="Stroke %"
+                    value={Math.round((interactionConfig.theme?.marquee?.strokeAlpha ?? 0.8) * 100)}
+                    onChange={(value) => setMarqueeTheme({ strokeAlpha: value / 100 })}
+                    min={0}
+                  />
                 </div>
-                <NumberField
-                  label="Stroke %"
-                  value={Math.round((interactionConfig.theme?.marquee?.strokeAlpha ?? 0.8) * 100)}
-                  onChange={(value) => setMarqueeTheme({ strokeAlpha: value / 100 })}
-                  min={0}
-                />
               </>
             ) : null}
           </>
         ) : null}
       </Section>
 
-      <Section title="Camera">
+      <Section title="Camera" collapsible defaultOpen={false}>
         <ToggleField
           label="Enabled"
           checked={extensions.camera !== false}
@@ -456,7 +456,7 @@ export function CanvasKitInspector() {
         ) : null}
       </Section>
 
-      <Section title="Grid">
+      <Section title="Grid" collapsible defaultOpen={false}>
         <ToggleField
           label="Enabled"
           checked={extensions.grid !== false}
@@ -511,7 +511,7 @@ export function CanvasKitInspector() {
         ) : null}
       </Section>
 
-      <Section title="Snap">
+      <Section title="Snap" collapsible defaultOpen={false}>
         <ToggleField
           label="Enabled"
           checked={extensions.snap !== false}

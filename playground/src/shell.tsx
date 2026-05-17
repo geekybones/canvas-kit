@@ -2,11 +2,12 @@ import { useCanvasContext } from '@/canvas';
 import { Header } from '@/components/header/Header';
 import { RightPanel } from '@/components/inspector/RightPanel';
 import { LeftPanel } from '@/components/layers/LeftPanel';
+import type { PanelControls } from '@/layout/panelControls';
 
-export function ShellHeader() {
+export function ShellHeader({ panels }: { panels: PanelControls }) {
   const canvas = useCanvasContext();
   if (!canvas) return <header className="hdr" aria-hidden />;
-  return <Header />;
+  return <Header panels={panels} />;
 }
 
 export function ShellLeft() {

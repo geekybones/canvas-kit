@@ -50,7 +50,7 @@ export function ExportMenu({ onExportPng, onExportJson }: ExportMenuProps) {
     <div ref={exportRef} className={`export-btn${isOpen ? ' open' : ''}`}>
       <button type="button" className="export-main" onClick={handleExportPng}>
         <Icon d={ICONS.upload} size={14} />
-        Export
+        <span className="export-label">Export</span>
       </button>
       <button
         type="button"

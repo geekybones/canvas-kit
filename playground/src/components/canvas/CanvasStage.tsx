@@ -1,5 +1,6 @@
 import { CanvasKit, type SerializedElement } from '@geekybones/canvas-kit';
-import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { CanvasHostResize } from '@/components/canvas/CanvasHostResize';
 import { useCanvasStore } from '@/canvas';
 import mockScene from '@/data/mockScene';
 import { parseJsonColors } from '@/utils/colors';
@@ -46,6 +47,9 @@ export function CanvasStage({ onReady }: CanvasStageProps) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const sceneSeedRef = useRef<SerializedElement[]>(mockScene);
   const [viewportLayoutKey, setViewportLayoutKey] = useState(0);
+  const bumpViewportLayout = useCallback(() => {
+    setViewportLayoutKey((k) => k + 1);
+  }, []);
 
   useLayoutEffect(() => {
     void viewportLayoutKey;
@@ -106,6 +110,7 @@ export function CanvasStage({ onReady }: CanvasStageProps) {
   return (
     <main className="canvas-wrap">
       <div ref={hostRef} className="canvas-host" />
+      <CanvasHostResize hostRef={hostRef} onLayout={bumpViewportLayout} />
     </main>
   );
 }

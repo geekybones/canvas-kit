@@ -1,14 +1,21 @@
+import { useState } from 'react';
 import { useCanvas, useCanvasStore } from '@/canvas';
 import { TOOL_BUTTONS } from '@/components/header/constants';
 import { ExportMenu } from '@/components/header/ExportMenu';
 import { HeaderBrand } from '@/components/header/HeaderBrand';
+import { HeaderPanelToggles } from '@/components/header/HeaderPanelToggles';
 import { HeaderTools } from '@/components/header/HeaderTools';
 import { Icon } from '@/components/ui/Icon';
 import { ICONS } from '@/icons/icons';
-import { createPlaygroundElement } from '@/utils/createPlaygroundElement';
+import type { PanelControls } from '@/layout/panelControls';
+import {
+  createPlaygroundElement,
+  type AddElementKind,
+} from '@/utils/createPlaygroundElement';
 import { downloadBlob } from '@/utils/downloadBlob';
 
-export function Header() {
+export function Header({ panels }: { panels: PanelControls }) {
+  const [activeTool, setActiveTool] = useState<AddElementKind | null>(null);
   const canvas = useCanvas();
   const { canUndo, canRedo } = useCanvasStore((s) => s.history);
   const { zoom } = useCanvasStore((s) => s.camera);
@@ -20,11 +27,23 @@ export function Header() {
 
   return (
     <header className="hdr">
-      <HeaderBrand />
+      <div className="hdr-l">
+        <HeaderPanelToggles
+          leftOpen={panels.leftOpen}
+          rightOpen={panels.rightOpen}
+          onToggleLeft={panels.onToggleLeft}
+          onToggleRight={panels.onToggleRight}
+        />
+        <HeaderBrand />
+      </div>
       <HeaderTools
         tools={TOOL_BUTTONS}
+        activeTool={activeTool}
         onAdd={(kind) => {
-          void createPlaygroundElement(canvas, kind);
+          void (async () => {
+            await createPlaygroundElement(canvas, kind);
+            setActiveTool(null);
+          })();
         }}
       />
       <div className="hdr-r">
@@ -34,6 +53,7 @@ export function Header() {
             className="iconbtn"
             title="Clear canvas"
             onClick={() => {
+              if (!window.confirm('Clear all elements from the canvas?')) return;
               canvas.clear();
               canvas.interaction.select(null);
             }}

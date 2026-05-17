@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
 import { ICONS } from '@/icons/icons';
 import { colorToHex, hexToNumber } from '@/utils/colors';
@@ -26,18 +26,52 @@ export function Section({
   title,
   action,
   children,
+  collapsible = false,
+  defaultOpen = true,
 }: {
   title: string;
   action?: React.ReactNode;
   children: React.ReactNode;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const bodyId = useId();
+
+  if (!collapsible) {
+    return (
+      <section className="rsec">
+        <header className="rsec-h">
+          <span>{title}</span>
+          {action}
+        </header>
+        <div className="rsec-body">{children}</div>
+      </section>
+    );
+  }
+
   return (
-    <section className="rsec">
+    <section className={`rsec${open ? '' : ' collapsed'}`}>
       <header className="rsec-h">
-        <span>{title}</span>
+        <button
+          type="button"
+          className="rsec-h-collapsible"
+          aria-expanded={open}
+          aria-controls={bodyId}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <span className="rsec-title">
+            <span className="rsec-chev" aria-hidden>
+              <Icon d={ICONS.chevDown} size={12} />
+            </span>
+            {title}
+          </span>
+        </button>
         {action}
       </header>
-      <div className="rsec-body">{children}</div>
+      <div id={bodyId} className="rsec-body">
+        {children}
+      </div>
     </section>
   );
 }
