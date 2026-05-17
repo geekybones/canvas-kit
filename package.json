@@ -54,7 +54,6 @@
   },
   "scripts": {
     "build": "vite build",
-    "build:types": "tsc --emitDeclarationOnly",
     "build:playground": "pnpm build && pnpm --dir playground build",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
