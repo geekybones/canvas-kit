@@ -46,12 +46,13 @@ export class CircleShape extends BaseElement<CircleOptions> {
     const ry = height !== undefined ? height / 2 : radius;
     const drawShape = () => (rx === ry ? g.circle(0, 0, rx) : g.ellipse(0, 0, rx, ry));
 
-    if (fill !== undefined) {
+    if (fill !== undefined || stroke !== undefined) {
       drawShape();
+    }
+    if (fill !== undefined) {
       g.fill({ color: fill, alpha: fillAlpha });
     }
     if (stroke !== undefined) {
-      drawShape();
       g.stroke({
         color: stroke,
         width: strokeWidth,

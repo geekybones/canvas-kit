@@ -215,8 +215,9 @@ export class BoundingBox {
       ny = dy / len;
     const step = dotRadius * 2 + gap;
     for (let d = 0; d <= len; d += step) {
-      g.circle(x1 + nx * d, y1 + ny * d, dotRadius).fill({ color });
+      g.circle(x1 + nx * d, y1 + ny * d, dotRadius);
     }
+    g.fill({ color });
   }
 
   private positionHandles(rect: Rectangle): void {

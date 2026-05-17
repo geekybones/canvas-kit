@@ -44,12 +44,13 @@ export class StarShape extends BaseElement<StarOptions> {
     const outerRadius = Math.min(width, height) / 2;
     const innerRadius = outerRadius * 0.45;
 
-    if (fill !== undefined) {
+    if (fill !== undefined || stroke !== undefined) {
       g.star(0, 0, points, outerRadius, innerRadius);
+    }
+    if (fill !== undefined) {
       g.fill({ color: fill, alpha: fillAlpha });
     }
     if (stroke !== undefined) {
-      g.star(0, 0, points, outerRadius, innerRadius);
       g.stroke({
         color: stroke,
         width: strokeWidth,

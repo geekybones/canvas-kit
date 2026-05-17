@@ -4,7 +4,7 @@ import { CameraManager } from '@/extensions/camera/CameraManager';
 import { ContextMenuManager } from '@/extensions/contextMenu/ContextMenuManager';
 import type { Extension } from '@/extensions/Extension';
 import { ExportManager } from '@/extensions/export/ExportManager';
-import { fontManager } from '@/extensions/fonts/FontManager';
+import { FontManager } from '@/extensions/fonts/FontManager';
 import { GridManager } from '@/extensions/grid/GridManager';
 import { HistoryManager } from '@/extensions/history/HistoryManager';
 import { InteractionManager } from '@/extensions/interaction/InteractionManager';
@@ -39,7 +39,7 @@ export function buildExtensionList(config: ExtensionsConfig = {}): Extension[] {
   pushIfEnabled('serialization', new SerializationManager());
   pushIfEnabled('interaction', new InteractionManager());
   pushIfEnabled('contextMenu', new ContextMenuManager());
-  pushIfEnabled('fonts', fontManager);
+  pushIfEnabled('fonts', new FontManager());
   pushIfEnabled('performance', new PerformanceManager());
   pushIfEnabled('export', new ExportManager());
   pushIfConfigured(config.camera, (cameraConfig) => new CameraManager(cameraConfig ?? {}));

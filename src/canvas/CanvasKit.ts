@@ -92,6 +92,7 @@ export class CanvasKit {
       width: options.width,
       height: options.height,
       backgroundColor: options.backgroundColor,
+      preference: options.preference,
     });
     this.ready = this.app.ready.then(async () => {
       if (this.destroyed) return;
@@ -349,6 +350,10 @@ export class CanvasKit {
       (ext as { destroy?: () => void } | undefined)?.destroy?.();
     }
     this.extensions.clear();
+    // Call each element's own destroy() so custom cleanup runs (blob URLs, shaders, etc.)
+    for (const el of this.registry.getAll().values()) {
+      el.destroy();
+    }
     this.registry.clear();
     this.app.destroy();
   }

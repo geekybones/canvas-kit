@@ -12,6 +12,7 @@ export class FontManager implements Extension {
   accessors?: { fonts: ReturnType<typeof createFontsAccessor> };
   private readonly loaded = new Map<string, string>();
   private readonly pending = new Map<string, PendingFontLoad>();
+  private readonly loadedFaces = new Map<string, FontFace>();
 
   init(_ctx: CanvasContext): void {
     this.accessors = {
@@ -63,11 +64,19 @@ export class FontManager implements Extension {
       const font = new FontFace(family, `url(${url})`);
       await font.load();
       document.fonts.add(font);
+      this.loadedFaces.set(family, font);
       this.loaded.set(family, url);
     } finally {
       this.pending.delete(family);
     }
   }
-}
 
-export const fontManager = new FontManager();
+  destroy(): void {
+    for (const font of this.loadedFaces.values()) {
+      document.fonts.delete(font);
+    }
+    this.loadedFaces.clear();
+    this.loaded.clear();
+    this.pending.clear();
+  }
+}

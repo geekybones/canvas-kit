@@ -24,6 +24,7 @@ export interface CanvasKitOptions {
   width?: number;
   height?: number;
   backgroundColor?: string;
+  preference?: 'webgl' | 'webgpu' | Array<'webgl' | 'webgpu'>;
   constrainToCanvas?: boolean;
   extensions?: ExtensionsConfig;
 }

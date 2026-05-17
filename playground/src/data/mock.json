@@ -80,17 +80,18 @@
     "type": "text",
     "x": 212.5849609375,
     "y": 386.4010599982837,
-    "text": "Curved type",
+    "text": "CURVED TEXT",
     "fontSize": 34,
     "fontWeight": "bold",
-    "fill": "#0F172A",
+    "fill": "#001F66",
     "stroke": "#7C5CFF",
-    "strokeWidth": 1.5,
     "effect": {
       "type": "Arch",
-      "intensity": 34
+      "intensity": 60
     },
-    "zIndex": 4
+    "zIndex": 4,
+    "fontFamily": "Poppins",
+    "fontUrl": "/assets/fonts/poppins/poppins-400-normal.woff"
   },
   {
     "id": "layer-section-divider",

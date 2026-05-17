@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createFontsAccessor } from '@/extensions/fonts/accessor';
-import { FontManager, fontManager } from '@/extensions/fonts/FontManager';
+import { FontManager } from '@/extensions/fonts/FontManager';
 
 type MockFontFace = {
   family: string;
@@ -107,12 +107,6 @@ describe('FontManager', () => {
     await manager.preloadFont('Manrope', undefined);
 
     expect(loadSpy).not.toHaveBeenCalled();
-  });
-});
-
-describe('fontManager', () => {
-  it('is the default shared FontManager instance', () => {
-    expect(fontManager).toBeInstanceOf(FontManager);
   });
 });
 

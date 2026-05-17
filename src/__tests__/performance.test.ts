@@ -1,51 +1,9 @@
 import { Assets } from 'pixi.js';
 import { describe, expect, it, vi } from 'vitest';
 import type { CanvasContext } from '@/core/CanvasContext';
-import { CanvasEventBus } from '@/core/Events';
 import { PerformanceManager } from '@/extensions/performance/PerformanceManager';
 
-function makeCtx() {
-  const events = new CanvasEventBus();
-  const app = {
-    getPixiApp: () => ({
-      ticker: {
-        add: vi.fn(),
-        remove: vi.fn(),
-      },
-    }),
-  };
-
-  const ctx = {
-    app,
-    events,
-    registry: {
-      get: vi.fn(),
-      getAll: vi.fn(() => new Map()),
-    },
-    options: {},
-    stage: {} as never,
-    getElement: vi.fn(),
-    addElement: vi.fn(),
-    removeElement: vi.fn(),
-    getExtension: vi.fn(),
-    hasExtension: vi.fn(),
-  } as unknown as CanvasContext;
-
-  return { ctx, events };
-}
-
 describe('PerformanceManager', () => {
-  it('keeps dirty ids until flushed explicitly', () => {
-    const { ctx, events } = makeCtx();
-    const manager = new PerformanceManager();
-    manager.init(ctx);
-
-    events.emit('element:updated', 'shape-1');
-    expect(manager.dirtyTracker.isDirty('shape-1')).toBe(true);
-    expect(manager.dirtyTracker.flush()).toEqual(['shape-1']);
-    expect(manager.dirtyTracker.isDirty('shape-1')).toBe(false);
-  });
-
   it('retains and releases assets by reference count', async () => {
     const unloadSpy = vi.mocked(Assets.unload);
     unloadSpy.mockClear();
@@ -75,18 +33,17 @@ describe('PerformanceManager', () => {
     expect(unloadSpy).toHaveBeenCalledWith('/b.png');
   });
 
-  it('destroy unsubscribes listeners and clears state', async () => {
-    const { ctx, events } = makeCtx();
-    const offSpy = vi.spyOn(events, 'off');
+  it('destroy clears all tracked assets', async () => {
+    const unloadSpy = vi.mocked(Assets.unload);
+    unloadSpy.mockClear();
+
+    const ctx = {} as unknown as CanvasContext;
     const manager = new PerformanceManager();
     manager.init(ctx);
-
-    events.emit('element:updated', 'shape-1');
     manager.cacheManager.retain('/asset.png');
 
     manager.destroy();
 
-    expect(offSpy).toHaveBeenCalled();
-    expect(manager.dirtyTracker.flush()).toEqual([]);
+    expect(unloadSpy).toHaveBeenCalledWith('/asset.png');
   });
 });

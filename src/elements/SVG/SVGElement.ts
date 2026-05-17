@@ -1,9 +1,10 @@
-import { Container, Sprite, Texture } from 'pixi.js';
+import { Container, DOMAdapter, Sprite, Texture } from 'pixi.js';
 import { BaseElement } from '@/core/BaseElement';
 import type { SVGOptions } from '@/elements/SVG/SVGOptions';
 
 export class SVGElement extends BaseElement<SVGOptions> {
   private sprite: Sprite | null = null;
+  private currentTexture: Texture | null = null;
   private blobUrl: string | null = null;
 
   async init(): Promise<void> {
@@ -33,11 +34,19 @@ export class SVGElement extends BaseElement<SVGOptions> {
       URL.revokeObjectURL(this.blobUrl);
       this.blobUrl = null;
     }
+    this.currentTexture?.destroy(true);
+    this.currentTexture = null;
     this.displayObject.destroy({ children: true });
   }
 
   private async loadSVG(): Promise<void> {
+    // Destroy previous resources before creating new ones
+    this.sprite?.destroy();
+    this.sprite = null;
+    this.currentTexture?.destroy(true);
+    this.currentTexture = null;
     this.displayObject.removeChildren();
+
     if (this.blobUrl) {
       URL.revokeObjectURL(this.blobUrl);
       this.blobUrl = null;
@@ -54,16 +63,15 @@ export class SVGElement extends BaseElement<SVGOptions> {
     const w = this.options.width ?? img.naturalWidth;
     const h = this.options.height ?? img.naturalHeight;
 
-    const offscreen = document.createElement('canvas');
-    offscreen.width = w;
-    offscreen.height = h;
-    const ctx = offscreen.getContext('2d');
+    const offscreen = DOMAdapter.get().createCanvas(w, h);
+    const ctx = (offscreen as HTMLCanvasElement).getContext('2d');
     if (!ctx) {
       throw new Error('Failed to create 2D canvas context for SVG rasterization.');
     }
-    ctx.drawImage(img, 0, 0, w, h);
+    ctx.drawImage(img as CanvasImageSource, 0, 0, w, h);
 
-    const texture = Texture.from(offscreen);
+    const texture = Texture.from(offscreen as HTMLCanvasElement);
+    this.currentTexture = texture;
     this.sprite = new Sprite(texture);
     this.sprite.width = w;
     this.sprite.height = h;
@@ -77,8 +85,8 @@ export class SVGElement extends BaseElement<SVGOptions> {
 
   private loadImage(url: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
-      const img = new window.Image();
-      img.onload = () => resolve(img);
+      const img = DOMAdapter.get().createImage();
+      img.onload = () => resolve(img as HTMLImageElement);
       img.onerror = reject;
       img.src = url;
     });

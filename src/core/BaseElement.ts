@@ -55,6 +55,7 @@ export abstract class BaseElement<TOptions extends BaseOptions> {
     this.displayObject.scale.set(scaleX, scaleY);
     this.displayObject.zIndex = zIndex;
     this.displayObject.visible = visible;
+    this.displayObject.cullable = true;
   }
 
   protected centerPivot(): void {

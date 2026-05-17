@@ -220,6 +220,31 @@ vi.mock('pixi.js', () => {
     }
   }
 
+  class Color {
+    private value: number;
+    constructor(input: number | string) {
+      this.value = typeof input === 'number' ? input : 0xffffff;
+    }
+    toNumber() {
+      return this.value;
+    }
+  }
+
+  const DOMAdapter = {
+    get: vi.fn(() => ({
+      createCanvas: vi.fn((w = 0, h = 0) => {
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        return c;
+      }),
+      createImage: vi.fn(() => new Image()),
+    })),
+  };
+
+  const extensions = { add: vi.fn() };
+  const CullerPlugin = {};
+
   return {
     Application: vi.fn().mockImplementation(makeApplication),
     Container: vi.fn().mockImplementation(makeContainer),
@@ -233,6 +258,10 @@ vi.mock('pixi.js', () => {
     Assets,
     Texture,
     RenderTexture,
+    Color,
+    DOMAdapter,
+    extensions,
+    CullerPlugin,
     Point,
     Rectangle,
     EventEmitter: class {

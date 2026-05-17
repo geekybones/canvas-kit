@@ -1,4 +1,4 @@
-import { fontManager } from '@geekybones/canvas-kit';
+import type { FontsAccessor } from '@geekybones/canvas-kit';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useEffect, useRef, useState } from 'react';
 import { Field } from '@/components/ui/fields';
@@ -11,15 +11,17 @@ const ITEM_H = 32;
 export function FontSelectField({
   value,
   fonts,
+  fontsAccessor,
   onChange,
 }: {
   value: string | undefined;
   fonts: readonly FontMeta[];
+  fontsAccessor: FontsAccessor;
   onChange: (font: FontMeta | undefined) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [loadedFamilies, setLoadedFamilies] = useState<ReadonlySet<string>>(
-    () => new Set(fontManager.getLoadedFonts()),
+    () => new Set(fontsAccessor.getLoadedFonts()),
   );
   const triggerRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -38,8 +40,8 @@ export function FontSelectField({
     void Promise.allSettled(
       fonts.map(async (font) => {
         const url = getWoffUrl(font);
-        if (!url || fontManager.isLoaded(font.family)) return;
-        await fontManager.load(font.family, url);
+        if (!url || fontsAccessor.isLoaded(font.family)) return;
+        await fontsAccessor.load(font.family, url);
         if (!cancelled) {
           setLoadedFamilies((prev) => {
             if (prev.has(font.family)) return prev;
@@ -51,7 +53,7 @@ export function FontSelectField({
     return () => {
       cancelled = true;
     };
-  }, [open, fonts]);
+  }, [open, fonts, fontsAccessor]);
 
   useEffect(() => {
     if (!open) return;

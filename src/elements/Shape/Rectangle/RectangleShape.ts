@@ -43,21 +43,19 @@ export class RectangleShape extends BaseElement<RectangleOptions> {
       borderRadius,
     } = this.options;
 
-    if (fill !== undefined) {
+    if (fill !== undefined || stroke !== undefined) {
       if (borderRadius) {
         g.roundRect(0, 0, width, height, borderRadius);
       } else {
         g.rect(0, 0, width, height);
       }
+    }
+
+    if (fill !== undefined) {
       g.fill({ color: fill, alpha: fillAlpha });
     }
 
     if (stroke !== undefined) {
-      if (borderRadius) {
-        g.roundRect(0, 0, width, height, borderRadius);
-      } else {
-        g.rect(0, 0, width, height);
-      }
       g.stroke({
         color: stroke,
         width: strokeWidth,

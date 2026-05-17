@@ -55,6 +55,7 @@ export function TextInspector() {
         <FontSelectField
           value={selected.fontFamily}
           fonts={FONTS}
+          fontsAccessor={canvas.fonts}
           onChange={(font) => {
             patchSelection(canvas, selectedId, {
               fontFamily: font?.family,

@@ -16,4 +16,13 @@ export async function loadExtensions(params: {
     }
     params.extensions.set(ext.name, ext);
   }
+
+  // Sort stage-level layer containers once by zIndex after all extensions have
+  // added their children, so the stage never needs sortableChildren = true.
+  // worldContainer already has sortableChildren = true for element z-ordering.
+  const stage = params.ctx.stage;
+  const sorted = [...stage.children].sort((a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0));
+  for (const child of sorted) {
+    stage.addChild(child);
+  }
 }

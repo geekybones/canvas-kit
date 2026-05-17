@@ -24,6 +24,7 @@ export abstract class BaseTextElement<
   protected decorationNode: Graphics | null = null;
   protected renderVersion = 0;
   protected destroyed = false;
+  private _cached = false;
 
   protected async initTextElement(): Promise<void> {
     this.displayObject = new Container();
@@ -46,11 +47,32 @@ export abstract class BaseTextElement<
   protected async beforeInitialRender(): Promise<void> {}
 
   protected clearContent(): void {
+    this.disableCache();
     this.vectorState = disposeVectorTextState(this.vectorState);
+    this.standardTextNode?.destroy();
     this.standardTextNode = null;
     this.backgroundNode = null;
-    this.decorationNode = null;
+    this.clearDecorationNode();
     this.displayObject.removeChildren();
+  }
+
+  private clearDecorationNode(): void {
+    if (!this.decorationNode) return;
+    this.displayObject.removeChild(this.decorationNode);
+    this.decorationNode.destroy();
+    this.decorationNode = null;
+  }
+
+  private enableCache(): void {
+    if (this.destroyed || this._cached || !this.vectorState) return;
+    this.displayObject.cacheAsTexture(true);
+    this._cached = true;
+  }
+
+  private disableCache(): void {
+    if (!this._cached) return;
+    this.displayObject.cacheAsTexture(false);
+    this._cached = false;
   }
 
   protected refreshTextResolution(
@@ -77,17 +99,21 @@ export abstract class BaseTextElement<
     }
 
     if (isEffectOnlyUpdate(keys, mergedEffect, this.options.effect, this.vectorState)) {
+      this.disableCache();
       Object.assign(this.options, next);
       this.options.effect = mergedEffect;
       reapplyTextEffect(this.vectorState, this.options.effect, this.getResolvedFontSize());
       this.centerPivot();
+      this.enableCache();
       return;
     }
 
     if (isBackgroundOnlyUpdate(keys)) {
+      this.disableCache();
       Object.assign(this.options, next);
       this.clearBackgroundNode();
       this.renderBackground();
+      this.enableCache();
       return;
     }
 
@@ -98,6 +124,7 @@ export abstract class BaseTextElement<
         return;
       }
 
+      this.disableCache();
       Object.assign(this.options, next);
       if (hasEffectUpdate) {
         this.options.effect = mergedEffect;
@@ -106,6 +133,7 @@ export abstract class BaseTextElement<
       const textOpts = this.getVectorRenderOptions();
 
       if (!textOpts) {
+        this.enableCache();
         return;
       }
 
@@ -122,6 +150,7 @@ export abstract class BaseTextElement<
       this.clearBackgroundNode();
       this.renderBackground();
       this.centerPivot();
+      this.enableCache();
       return;
     }
 
@@ -158,6 +187,7 @@ export abstract class BaseTextElement<
   protected afterOptionsAssigned(_next: Partial<TOptions>, _prevFontSize: number): void {}
 
   protected async renderContent(): Promise<void> {
+    this.disableCache();
     const version = ++this.renderVersion;
     const effect = this.options.effect;
 
@@ -183,6 +213,9 @@ export abstract class BaseTextElement<
 
       this.renderBackground();
 
+      if (!this.destroyed) {
+        this.enableCache();
+      }
       return;
     }
 
@@ -198,6 +231,8 @@ export abstract class BaseTextElement<
   }
 
   protected renderDecorations(): void {
+    this.clearDecorationNode();
+
     const { underline, strikethrough, fill = 0x000000 } = this.options;
 
     if (!underline && !strikethrough) {

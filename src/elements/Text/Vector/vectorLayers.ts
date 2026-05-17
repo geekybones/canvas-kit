@@ -88,7 +88,7 @@ export function buildStrokeLayers(
 
   const radiusMultiplier = strokeAlign === 'outside' ? 1 : strokeAlign === 'center' ? 0.5 : 0.25;
   const radius = Math.max(0.5, strokeWidth * radiusMultiplier);
-  const copyCount = 12;
+  const copyCount = 8;
   const layers: VectorTextLayer[] = [];
 
   for (let i = 0; i < copyCount; i++) {
@@ -144,14 +144,8 @@ export function buildDecorationLayers(
       return null;
     }
 
-    const originalPositions = new Float32Array(positions);
-    return buildVectorLayer(
-      new Float32Array(originalPositions),
-      new Uint32Array(indices),
-      fill,
-      1,
-      originalPositions,
-    );
+    const positionsArray = new Float32Array(positions);
+    return buildVectorLayer(positionsArray, new Uint32Array(indices), fill, 1);
   };
 
   if (underline) {
@@ -175,11 +169,20 @@ export function destroyVectorTextState(state: VectorTextState): void {
   const layers = [state.fillLayer, ...state.strokeLayers, ...state.decorationLayers];
 
   for (const { mesh, geometry, shader } of layers) {
-    mesh.destroy();
-    geometry.destroy(true);
-
-    if (typeof shader.destroy === 'function') {
-      shader.destroy();
+    try {
+      mesh.destroy();
+    } catch {
+      /* already destroyed */
+    }
+    try {
+      geometry.destroy(true);
+    } catch {
+      /* already destroyed */
+    }
+    try {
+      if (typeof shader.destroy === 'function') shader.destroy();
+    } catch {
+      /* noop */
     }
   }
 }

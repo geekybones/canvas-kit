@@ -1,4 +1,4 @@
-import { Graphics, TilingSprite } from 'pixi.js';
+import { Graphics, type Texture, TilingSprite } from 'pixi.js';
 import type { CanvasContext } from '@/core/CanvasContext';
 import type { CameraManager } from '@/extensions/camera/CameraManager';
 import type { Extension } from '@/extensions/Extension';
@@ -22,6 +22,7 @@ export class GridManager implements Extension {
   private sprite?: TilingSprite;
   private ctx!: CanvasContext;
   private cleanupFns: Array<() => void> = [];
+  private readonly textureCache = new Map<string, Texture>();
 
   constructor(config: GridConfig = {}) {
     this.cfg = { ...DEFAULTS, ...config };
@@ -71,9 +72,18 @@ export class GridManager implements Extension {
     return texture;
   }
 
+  private getOrCreateTexture(): Texture {
+    const key = `${this.cfg.cellSize}:${this.cfg.majorInterval}`;
+    const cached = this.textureCache.get(key);
+    if (cached) return cached;
+    const texture = this.createGridTexture();
+    this.textureCache.set(key, texture);
+    return texture;
+  }
+
   private createSprite(): void {
     const pixi = this.ctx.app.getPixiApp();
-    const texture = this.createGridTexture();
+    const texture = this.getOrCreateTexture();
     const { width, height } = pixi.screen;
     this.sprite = new TilingSprite({ texture, width, height });
     this.sprite.zIndex = -1000;
@@ -90,8 +100,18 @@ export class GridManager implements Extension {
   private updateTexture(): void {
     if (!this.sprite) return;
     const oldTexture = this.sprite.texture;
-    this.sprite.texture = this.createGridTexture();
-    oldTexture.destroy(true);
+    const newTexture = this.getOrCreateTexture();
+    if (oldTexture !== newTexture) {
+      // Remove the old entry from cache and free its GPU memory
+      for (const [key, tex] of this.textureCache) {
+        if (tex === oldTexture) {
+          this.textureCache.delete(key);
+          break;
+        }
+      }
+      oldTexture.destroy(true);
+      this.sprite.texture = newTexture;
+    }
     const cameraState = this.ctx.getExtension<CameraManager>('camera')?.getState() ?? {
       zoom: 1,
       x: 0,
@@ -142,5 +162,9 @@ export class GridManager implements Extension {
     this.cleanupFns = [];
     this.sprite?.destroy(true);
     this.sprite = undefined;
+    for (const texture of this.textureCache.values()) {
+      texture.destroy(true);
+    }
+    this.textureCache.clear();
   }
 }

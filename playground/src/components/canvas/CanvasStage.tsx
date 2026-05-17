@@ -1,4 +1,4 @@
-import { CanvasKit, fontManager, type SerializedElement } from '@geekybones/canvas-kit';
+import { CanvasKit, type SerializedElement } from '@geekybones/canvas-kit';
 import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useCanvasStore } from '@/canvas';
 import mockScene from '@/data/mock.json';
@@ -73,8 +73,8 @@ export function CanvasStage({ onReady }: CanvasStageProps) {
       const fontPreloads = sceneSeedRef.current.flatMap((el) => {
         if (el.type !== 'text' || typeof el.fontFamily !== 'string') return [];
         const url = resolveFontUrlFromFamily(el.fontFamily);
-        if (!url || fontManager.isLoaded(el.fontFamily)) return [];
-        return [fontManager.load(el.fontFamily, url)];
+        if (!url || canvas.fonts.isLoaded(el.fontFamily)) return [];
+        return [canvas.fonts.load(el.fontFamily, url)];
       });
       await Promise.all(fontPreloads);
 

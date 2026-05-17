@@ -52,5 +52,5 @@ export function updateRasterTextResolution(
 
   const dpr = window.devicePixelRatio ?? 1;
   const maxScale = Math.max(Math.abs(scaleX), Math.abs(scaleY), 1);
-  textNode.resolution = dpr * maxScale;
+  textNode.resolution = Math.min(3, dpr * maxScale);
 }

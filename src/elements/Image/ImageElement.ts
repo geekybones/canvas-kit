@@ -47,6 +47,8 @@ export class ImageElement extends BaseElement<ImageOptions> {
   }
 
   private async loadSprite(): Promise<void> {
+    this.sprite?.destroy();
+    this.sprite = null;
     this.displayObject.removeChildren();
     const texture = await Assets.load(this.options.src);
     this.sprite = new Sprite(texture);
