@@ -8,9 +8,7 @@ import {
   removeWithHistory,
   updateWithHistory,
 } from '@/canvas/CanvasKitActions';
-import type { CameraState } from '@/core/Events';
 import type { CanvasKitOptions } from '@/canvas/CanvasKitOptions';
-import type { CameraConfig } from '@/extensions/camera/types';
 import { loadElements } from '@/canvas/ElementLoader';
 import { loadExtensions } from '@/canvas/ExtensionLoader';
 import type { BaseElement } from '@/core/BaseElement';
@@ -18,12 +16,13 @@ import type { BaseOptions } from '@/core/BaseOptions';
 import type { CanvasContext } from '@/core/CanvasContext';
 import { constrainElementToCanvas, isCanvasConstraintEnabled } from '@/core/canvasBounds';
 import { ElementRegistry } from '@/core/ElementRegistry';
+import type { CameraState } from '@/core/Events';
 import { CanvasEventBus, type CanvasEventMap } from '@/core/Events';
 import { TextElement } from '@/elements/Text/TextElement';
 import { createAlignmentAccessor } from '@/extensions/alignment/accessor';
 import type { AlignmentAccessor } from '@/extensions/alignment/types';
 import { createCameraAccessor } from '@/extensions/camera/accessor';
-import type { CameraAccessor } from '@/extensions/camera/types';
+import type { CameraAccessor, CameraConfig } from '@/extensions/camera/types';
 import { createContextMenuAccessor } from '@/extensions/contextMenu/accessor';
 import type { ContextMenuAccessor } from '@/extensions/contextMenu/types';
 import { createExportAccessor } from '@/extensions/export/accessor';

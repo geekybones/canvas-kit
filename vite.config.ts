@@ -6,11 +6,7 @@ const repoRoot = __dirname;
 const srcRoot = resolve(repoRoot, 'src');
 
 /** Paths excluded from declaration emit and from Rollup's module graph. */
-const buildTestExclude = [
-  'src/**/__tests__/**',
-  'src/**/*.test.ts',
-  'src/**/*.spec.ts',
-];
+const buildTestExclude = ['src/**/__tests__/**', 'src/**/*.test.ts', 'src/**/*.spec.ts'];
 
 function manualChunks(id: string): string | undefined {
   const normalized = id.replace(/\\/g, '/');

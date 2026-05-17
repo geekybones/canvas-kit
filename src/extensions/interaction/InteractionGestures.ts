@@ -1,6 +1,6 @@
 import type { FederatedPointerEvent } from 'pixi.js';
-import type { BaseOptions } from '@/core/BaseOptions';
 import type { BaseElement } from '@/core/BaseElement';
+import type { BaseOptions } from '@/core/BaseOptions';
 import {
   clampBoundsDelta,
   constrainElementToCanvas,
